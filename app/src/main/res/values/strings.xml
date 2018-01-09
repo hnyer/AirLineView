@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">AirLineView</string>
+    <string name="action_settings">Settings</string>
+    <string name="permission_request_denied">没有权限</string>
+
+    <string-array name="Track">
+        <item>d </item>
+        <item>x</item>
+        <item>y</item>
+        <item>m</item>
+    </string-array>
+</resources>
