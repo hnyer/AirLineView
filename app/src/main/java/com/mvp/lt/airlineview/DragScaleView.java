@@ -198,7 +198,7 @@ public class DragScaleView extends View implements View.OnTouchListener {
 //        canvas.drawPath(mInitPath, paint);
 
     }
-
+  //
     private void drawCanvas(Canvas canvas) {
         if (mPonitsList2 != null && mPonitsList2.size() > 0) {
             for (int i = 0; i < mPonitsList2.size(); i++) {

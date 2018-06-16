@@ -6,7 +6,7 @@
     android:orientation="vertical"
     >
 
-    <com.amap.api.maps2d.MapView
+    <com.amap.api.maps.MapView
         android:id="@+id/amap"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -39,13 +39,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <Spinner
-            android:id="@+id/spinner"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:entries="@array/Track">
-        </Spinner>
-
         <Button
             android:id="@+id/confirm"
             android:layout_width="wrap_content"
@@ -70,17 +63,155 @@
             android:id="@+id/set_div_et"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:inputType="numberDecimal"/>
+            android:inputType="number"
+            android:text="20"/>
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/show"
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="80dp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="总  长  度："/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="122.2m"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="飞行时间："/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="12.2 s"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="正射面积："/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="12.2 m2"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <RadioGroup
+        android:id="@+id/rotation_type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/rotation_line"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_marginTop="10dp"
+            android:background="#22000000"
+            android:checked="true"
+            android:text="航线旋转"
+            />
+
+        <RadioButton
+            android:id="@+id/rotation_all"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_gravity="bottom"
+            android:layout_marginTop="10dp"
+            android:background="#22000000"
+            android:text="整体旋转"
+            />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/show_rotation"
         android:layout_width="80dp"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
+        android:layout_marginBottom="30dp"
+        android:layout_marginLeft="100dp"
         android:layout_marginTop="10dp"
-        android:background="#22000000"
+        android:background="@color/half_transparent"
         android:text="显示"
+        android:textColor="@color/black"
         />
+
+    <LinearLayout
+        android:id="@+id/seekbar_head_layout"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@+id/text_head"
+        android:layout_gravity="bottom"
+        android:layout_marginEnd="50dp"
+        android:layout_marginLeft="100dp"
+        android:layout_marginRight="50dp"
+        android:layout_marginStart="100dp"
+        android:background="@color/location"
+        android:orientation="horizontal">
+
+        <SeekBar
+            android:id="@+id/seekbar_head"
+            android:layout_width="wrap_content"
+            android:layout_height="25dp"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:max="360"
+            />
+
+        <TextView
+            android:id="@+id/reduce_head_deg"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center"
+            android:layout_marginEnd="10dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginStart="20dp"
+            android:background="@drawable/ic_offline_fill"
+            android:gravity="center"
+            android:textColor="@color/white"/>
+
+        <TextView
+            android:id="@+id/add_head_deg"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center"
+            android:layout_marginEnd="5dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/ic_addition_fill"
+            android:gravity="center"
+            android:textColor="@color/white"/>
+
+    </LinearLayout>
 </FrameLayout>
