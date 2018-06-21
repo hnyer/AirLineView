@@ -44,9 +44,11 @@ import com.amap.api.maps.model.PolylineOptions;
 import com.amap.api.maps.model.Text;
 import com.amap.api.maps.model.TextOptions;
 import com.mvp.lt.airlineview.utils.RouteUtils2;
+import com.mvp.lt.airlineview.view.MaterialRangeSlider;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
@@ -54,13 +56,11 @@ import butterknife.ButterKnife;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
-public class MainActivity extends AppCompatActivity implements AMap.OnMapClickListener, LocationSource, AMapLocationListener, AMap.OnMarkerClickListener, AMap.InfoWindowAdapter {
+public class MainActivity extends AppCompatActivity implements AMap.OnMapClickListener, LocationSource, AMapLocationListener, AMap.OnMarkerClickListener, AMap.InfoWindowAdapter, MaterialRangeSlider.RangeSliderListener {
     @BindView(R.id.textGetBtn)
     Button mTextGetBtn;
     @BindView(R.id.text_get_tv)
     TextView mTextGetTv;
-    @BindView(R.id.ds)
-    DragScaleView mDs;
     @BindView(R.id.confirm)
     Button mConfirm;
     @BindView(R.id.clear)
@@ -85,6 +85,9 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
     RadioButton mRotationAll;
     @BindView(R.id.rotation_type)
     RadioGroup mRotationType;
+    @BindView(R.id.price_slider)
+    MaterialRangeSlider mPriceSlider;
+
     //定位监听
     private OnLocationChangedListener mListener = null;
     /*地图相关*/
@@ -92,8 +95,6 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
     //标识，用于判断是否只显示一次定位信息和用户重新定位
     private boolean isFirstLoc = true;
     private RxPermissions mRxPermissions;
-    // 范围点确定标志符
-    private boolean isOK = true;
     //声明AMapLocationClient类对象
     private AMapLocationClient mlocationClient;
     //声明AMapLocationClientOption对象
@@ -110,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
     private List<LatLng> rPolygons;
 
     //多边形
-    private Polygon mPolygon;
+    private Polygon mPolygon = null;
     public Polyline mPolyline;
 
     private Polyline mHangXianPolyline;
@@ -119,10 +120,61 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
     private List<LatLng> mListPolylines;
     private int Type_LINE = 0;
     private UiSettings mUiSettings;
-    private List<BitmapDescriptor> mTexTuresList;
-    private List<Integer> mTexIndexList;
+
     private int fenColor = Color.argb(255, 255, 64, 129);
     private int backColor = Color.argb(187, 255, 255, 255);
+    //航线间隔
+    int space = 20;
+    //外接矩形的集合
+    List<LatLng> mBoundsEWSNLatLng;
+    List<LatLng> mRBoundsEWSNLatLng;
+    public List<Polyline> mPolylineList = new ArrayList<Polyline>();//
+    private List<Text> mDistanceText = new ArrayList<Text>();
+    private Marker mCenterMarker;
+
+    //清除
+    private void clearLine() {
+        for (int i = 0; i < mDistanceText.size(); i++) {
+            mDistanceText.get(i).destroy();
+        }
+        mDistanceText.clear();
+        if (mPolygon != null) {
+            mPolygon.remove();
+        }
+        mPolygon = null;
+        if (mPolyline != null) {
+            mPolyline.remove();
+        }
+        for (int i = 0; i < mPolylineList.size(); i++) {
+            mPolylineList.get(i).remove();
+        }
+        if (mHangXianPolyline != null) {
+            mHangXianPolyline.remove();
+        }
+        // mPolygonList.clear();
+        polygons.clear();
+        for (int i = 0; i < markerList.size(); i++) {
+            markerList.get(i).destroy();
+        }
+        for (int i = 0; i < mMarkerList.size(); i++) {
+            mMarkerList.get(i).destroy();
+        }
+        for (int i = 0; i < crossMarkerList.size(); i++) {
+            crossMarkerList.get(i).destroy();
+        }
+        for (int i = 0; i < mMarkerListsss.size(); i++) {
+            mMarkerListsss.get(i).destroy();
+        }
+        mMarkerListsss.clear();
+        if (mCenterMarker != null) {
+            mCenterMarker.destroy();
+            mCenterMarker = null;
+        }
+        markerList.clear();
+        mLinelatLngs.clear();
+        mPolylineList.clear();
+        crossMarkerList.clear();
+    }
 
     //是否是重新选点
     @Override
@@ -130,12 +182,13 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        mPriceSlider.setRangeSliderListener(MainActivity.this);
+        mPriceSlider.setMin(0);
+        mPriceSlider.setMax(10);
 
         mClear.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDs.clearPath();
-                mDs.setVisibility(View.INVISIBLE);
                 clearLine();
             }
         });
@@ -148,14 +201,9 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
                 switch (checkedId) {
                     case R.id.rotation_line:
                         Type_LINE = 0;
-                        rotation_all = currentHeadDeg;
-                        currentHeadDeg = rotation_line;
-                        mSeekbarHead.setProgress(currentHeadDeg);
+
                         break;
                     case R.id.rotation_all:
-                        rotation_line = currentHeadDeg;
-                        currentHeadDeg = rotation_all;
-                        mSeekbarHead.setProgress(currentHeadDeg);
                         Type_LINE = 1;
                         break;
                 }
@@ -165,91 +213,174 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
         mConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String spaceSet = mSetDivEt.getText().toString().trim();
-                if (!TextUtils.isEmpty(spaceSet)) {
-                    space = Integer.parseInt(spaceSet);
+                String height = mSetDivEt.getText().toString().trim();
+                if (!TextUtils.isEmpty(height)) {
+                    int flyHeight = Integer.parseInt(height);
+                    space = (int) Math.floor(flyHeight / 2 + 3);
                     updateSpaceLine();
-                }
 
+                }
             }
         });
 
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        //在activity执行onResume时执行mMapView.onResume ()，重新绘制加载地图
-        mMapView.onResume();
+    public void onMaxChanged(int newValue) {
+        Log.e("onMaxChanged", newValue + "");
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        //在activity执行onPause时执行mMapView.onPause ()，暂停地图的绘制
-        mMapView.onPause();
+    public void onMinChanged(int newValue) {
+        Log.e("onMinChanged", newValue + "");
     }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mlocationClient.stopLocation();//停止定位后，本地定位服务并不会被销毁
-        //在activity执行onDestroy时执行mMapView.onDestroy()，销毁地图
-        mMapView.onDestroy();
-
-    }
-
-    int space = 20;
-    //外接矩形的集合
-    List<LatLng> mBoundsEWSNLatLng;
-    List<LatLng> mRBoundsEWSNLatLng;
-
-    public List<Polyline> mPolylineList = new ArrayList<Polyline>();//
-
-    public int rotation_line;
-    public int rotation_all;
-
-    private List<Text> mDistanceText = new ArrayList<Text>();
 
     //加点
     @Override
     public void onMapClick(LatLng latLng) {
         Vibrator vibrator = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
         vibrator.vibrate(100);
-        Log.e("onMapClick", latLng.latitude + ":" + latLng.longitude);
         addMarkersToMap(latLng);
-        polygons.add(latLng);
-        if (mPolygon != null) {
-            mPolygon.remove();
-        }
-
-        if (polygons.size() < 2) {
-            return;
-        }
-        if (polygons.size() > 2) {
-            if (mPolyline != null) {
-                mPolyline.remove();
-            }
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    //区域
-                    mPolygon = drawPolygonOptions(polygons
-                            , getResources().getColor(R.color.colorAccent)
-                            , getResources().getColor(R.color.trgary));
-
-                }
-            });
-        } else {
-            mPolyline = drawPolyLineOptions(polygons
-                    , getResources().getColor(R.color.colorAccent)
-                    , getResources().getColor(R.color.trgary));
-        }
         new Thread(new Runnable() {
             @Override
             public void run() {
+                if (mPolygon != null && mPolygon.isVisible()) {
+                    if (mPolygon.contains(latLng)) {
+                        List<Double> list = new ArrayList<>();
+                        //在多边形内
+                        for (int i = 0; i < polygons.size(); i++) {
+                            LatLng latLng1;
+                            LatLng latLng2;
+                            if (i == polygons.size() - 1) {
+                                latLng1 = polygons.get(i);
+                                latLng2 = polygons.get(0);
+                            } else {
+                                latLng1 = polygons.get(i);
+                                latLng2 = polygons.get(i + 1);
+                            }
+                            //多边形内
+                            list.add(RouteUtils2.PointToSegDist(latLng.longitude, latLng.latitude,
+                                    latLng1.longitude, latLng1.latitude,
+                                    latLng2.longitude, latLng2.latitude))
+                            ;
+                        }
+                        double x = Collections.min(list);
+                        int index = list.indexOf(x);
+                        Log.e("多边形内index", index + "");
+                        polygons.add(index + 1, latLng);
+                    } else {
+                        //在多边形外
+                        //是否有交点
+                        LatLng centerLatlng = mBoundsEWSNLatLng.get(0);
+                        for (int i = 0; i < polygons.size(); i++) {
+                            LatLng latLng1;
+                            LatLng latLng2;
+                            if (i == polygons.size() - 1) {
+                                latLng1 = polygons.get(i);
+                                latLng2 = polygons.get(0);
+                                boolean iscross = RouteUtils2.doIntersect(
+                                        RouteUtils2.latlng2px(aMap, centerLatlng),
+                                        RouteUtils2.latlng2px(aMap, latLng),
+                                        RouteUtils2.latlng2px(aMap, latLng1),
+                                        RouteUtils2.latlng2px(aMap, latLng2));
+                                Log.e("多边形外交点", i + ":" + iscross);
+                                if (iscross) {
+                                    polygons.add(i + 1, latLng);
+                                    break;
+                                } else {
+                                     if (mPolygon.contains(centerLatlng)){
+                                         Log.e("中点在多边形内", ":" + true);
+                                     }
+                                    //点是否在某条边上
+                                    LatLng latLng3 = null;
+                                    LatLng latLng4 = null;
+                                    latLng3 = polygons.get(polygons.size() - 1);
+                                    latLng4 = polygons.get(0);
+                                    if (RouteUtils2.orientations(RouteUtils2.latlng2px(aMap, latLng3)
+                                            , RouteUtils2.latlng2px(aMap, latLng4)
+                                            , RouteUtils2.latlng2px(aMap, centerLatlng))) {
+                                        // polygons.add(j + 1, latLng);
+                                        Log.e("多边形外交点,在线段上面", ":" + true);
+                                        break;
+                                    } else {
+                                        Log.e("多边形外交点,在线段上面", ":" + false);
+                                        break;
+                                    }
+
+//                                    for (int j = 0; j < polygons.size(); j++) {
+//                                        if (i == polygons.size() - 1) {
+//                                            latLng3 = polygons.get(j);
+//                                            latLng4 = polygons.get(0);
+//                                        } else {
+//                                            latLng3 = polygons.get(j);
+//                                            latLng4 = polygons.get(j + 1);
+//                                        }
+//                                        if (RouteUtils2.orientations(RouteUtils2.latlng2px(aMap, latLng3)
+//                                                , RouteUtils2.latlng2px(aMap, latLng4)
+//                                                , RouteUtils2.latlng2px(aMap, centerLatlng))) {
+//                                            polygons.add(j + 1, latLng);
+//                                            Log.e("多边形外交点,在线段上面", j + ":" + true);
+//                                            break;
+//                                        }
+//                                    }
+                                    //  break;
+                                }
+                            } else {
+                                latLng1 = polygons.get(i);
+                                latLng2 = polygons.get(i + 1);
+                                boolean iscross = RouteUtils2.doIntersect(
+                                        RouteUtils2.latlng2px(aMap, centerLatlng),
+                                        RouteUtils2.latlng2px(aMap, latLng),
+                                        RouteUtils2.latlng2px(aMap, latLng1),
+                                        RouteUtils2.latlng2px(aMap, latLng2));
+                                Log.e("多边形外交点", i + ":" + iscross);
+                                if (iscross) {
+                                    polygons.add(i + 1, latLng);
+                                    break;
+                                }
+                            }
+
+                        }
+                    }
+                } else {
+                    polygons.add(latLng);
+                }
+                for (int i = 0; i < mMarkerListsss.size(); i++) {
+                    if (mMarkerListsss.get(i) != null) {
+                        mMarkerListsss.get(i).destroy();
+
+                    }
+                }
+                for (int i = 0; i < polygons.size(); i++) {
+                    addCrossMarkerToMap(polygons, i);
+                }
+                if (mPolygon != null) {
+                    mPolygon.remove();
+                }
+                if (polygons.size() < 2) {
+                    return;
+                }
+                if (polygons.size() > 2) {
+                    if (mPolyline != null) {
+                        mPolyline.remove();
+                    }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            //区域
+                            mPolygon = drawPolygonOptions(polygons
+                                    , getResources().getColor(R.color.colorAccent)
+                                    , getResources().getColor(R.color.trgary));
+                        }
+                    });
+                } else {
+                    mPolyline = drawPolyLineOptions(polygons
+                            , getResources().getColor(R.color.colorAccent)
+                            , getResources().getColor(R.color.trgary));
+                }
                 for (int i = 0; i < mDistanceText.size(); i++) {
-                    mDistanceText.get(i).destroy();
+                    if (mDistanceText.get(i) != null)
+                        mDistanceText.get(i).destroy();
                 }
                 mDistanceText.clear();
                 //计算中点距离
@@ -271,104 +402,105 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
                                         .backgroundColor(backColor).text(distance + "米")
                         ));
                 }
+                // 1
+                mBoundsEWSNLatLng = RouteUtils2.createPolygonBounds(polygons);
+                addDMarkerToMap(mBoundsEWSNLatLng, 0);
+                drawOricFlyLines(polygons);
 
             }
         }).start();
-        // 1
-        mBoundsEWSNLatLng = RouteUtils2.createPolygonBounds(polygons); //不变
-        drawOricFlyLines(polygons);
+
     }
 
+    /***
+     *  旋转航线
+     * @param polygons
+     */
     private void drawOricFlyLines(List<LatLng> polygons) {
         if (polygons.size() < 3) {
             return;
         }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    //2
-                    rPolygons = RouteUtils2.createRotatePolygon(polygons, mBoundsEWSNLatLng, -currentHeadDeg);
-                    //3
-                    mRBoundsEWSNLatLng = RouteUtils2.createPolygonBounds(rPolygons);
-                    //4
-                    Double latlines[] = RouteUtils2.createLats(mRBoundsEWSNLatLng, space);
 
-                    int xxx = (int) Math.ceil(latlines[0]);
-                    List<LatLng> lines;
-                    List<LatLng> polylines = new ArrayList<>();
-
-                    for (int i = 1; i < xxx + 1; i++) {
-                        lines = new ArrayList<>();
-                        double fen = (latlines[1]) / 3 * 2;
-                        for (int j = 0; j < rPolygons.size(); j++) {
-                            int si = RouteUtils2.sint(j + 1, rPolygons.size());
-                            LatLng checklatlng = RouteUtils2.createInlinePoint(rPolygons.get(j), rPolygons.get(si),
-                                    mRBoundsEWSNLatLng.get(1).latitude + fen - i * latlines[1]);
-                            if (checklatlng != null) {
-                                lines.add(checklatlng);
-                            }
-                        }
-                        if (lines.size() < 2) {
-                            continue;
-                        }
-                        if (lines.get(0) == lines.get(1)) {
-                            continue;
-                        }
-                        if (i % 2 == 0) {
-                            double min2 = Math.min(lines.get(0).longitude, lines.get(1).longitude);
-                            LatLng latLng1 = new LatLng(lines.get(0).latitude, min2);
-
-
-                            double max1 = Math.max(lines.get(0).longitude, lines.get(1).longitude);
-                            LatLng latLng2 = new LatLng(lines.get(0).latitude, max1);
-                            //
-                            polylines.add(latLng1);
-                            polylines.add(latLng2);
-                        } else {
-                            double max1 = Math.max(lines.get(0).longitude, lines.get(1).longitude);
-                            LatLng latLng1 = new LatLng(lines.get(0).latitude, max1);
-
-
-                            double min2 = Math.min(lines.get(0).longitude, lines.get(1).longitude);
-                            LatLng latLng2 = new LatLng(lines.get(0).latitude, min2);
-                            polylines.add(latLng1);
-                            polylines.add(latLng2);
-                        }
-                        mListPolylines = RouteUtils2.createRotatePolygon(polylines, mBoundsEWSNLatLng, currentHeadDeg);
-
+        try {
+            rPolygons = RouteUtils2.createRotatePolygon(polygons, mBoundsEWSNLatLng, -currentHeadDeg);
+            mRBoundsEWSNLatLng = RouteUtils2.createPolygonBounds(rPolygons);
+            Double latlines[] = RouteUtils2.createLats(mRBoundsEWSNLatLng, space);
+            int xxx = (int) Math.ceil(latlines[0]);
+            List<LatLng> lines;
+            List<LatLng> polylines = new ArrayList<>();
+            for (int i = 1; i < xxx + 1; i++) {
+                lines = new ArrayList<>();
+                double fen = (latlines[1]) / 3 * 2;
+                for (int j = 0; j < rPolygons.size(); j++) {
+                    int si = RouteUtils2.sint(j + 1, rPolygons.size());
+                    LatLng checklatlng = RouteUtils2.createInlinePoint(rPolygons.get(j), rPolygons.get(si),
+                            mRBoundsEWSNLatLng.get(1).latitude + fen - i * latlines[1]);
+                    if (checklatlng != null) {
+                        lines.add(checklatlng);
                     }
-                    //划线
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (mHangXianPolyline != null) {
-                                mHangXianPolyline.remove();
-                            }
-                            mHangXianPolyline = aMap.addPolyline(new PolylineOptions().
-                                    setCustomTexture(BitmapDescriptorFactory.fromResource(R.drawable.custtexture)) //setCustomTextureList(bitmapDescriptors)
-                                    .addAll(mListPolylines)
-                                    .useGradient(true)
-                                    .width(18));
-                            for (int i = 0; i < mMarkerList.size(); i++) {
-                                mMarkerList.get(i).destroy();
-                            }
-                            mMarkerList.clear();
-                            for (int i = 0; i < mListPolylines.size(); i++) {
-                                addCrossMarkerToMap(mListPolylines.get(i), i + 1);
-                            }
-                        }
-                    });
-
-                } catch (Resources.NotFoundException e) {
-                    e.printStackTrace();
                 }
+                if (lines.size() < 2) {
+                    continue;
+                }
+                if (lines.get(0) == lines.get(1)) {
+                    continue;
+                }
+                if (i % 2 == 0) {
+                    double min2 = Math.min(lines.get(0).longitude, lines.get(1).longitude);
+                    LatLng latLng1 = new LatLng(lines.get(0).latitude, min2);
 
+
+                    double max1 = Math.max(lines.get(0).longitude, lines.get(1).longitude);
+                    LatLng latLng2 = new LatLng(lines.get(0).latitude, max1);
+                    //
+                    polylines.add(latLng1);
+                    polylines.add(latLng2);
+                } else {
+                    double max1 = Math.max(lines.get(0).longitude, lines.get(1).longitude);
+                    LatLng latLng1 = new LatLng(lines.get(0).latitude, max1);
+                    double min2 = Math.min(lines.get(0).longitude, lines.get(1).longitude);
+                    LatLng latLng2 = new LatLng(lines.get(0).latitude, min2);
+                    polylines.add(latLng1);
+                    polylines.add(latLng2);
+                }
+                mListPolylines = RouteUtils2.createRotatePolygon(polylines, mBoundsEWSNLatLng, currentHeadDeg);
+                startPointId = 0;
+                endPointId = mListPolylines.size() - 1;
 
             }
-        }).start();
+            //划线
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (mHangXianPolyline != null) {
+                        mHangXianPolyline.remove();
+                    }
+                    mPriceSlider.setRangeSliderListener(MainActivity.this);
+                    mPriceSlider.setMin(0);
+                    mPriceSlider.setMax(mListPolylines.size() - 1);
+                    mHangXianPolyline = aMap.addPolyline(new PolylineOptions().
+                            setCustomTexture(BitmapDescriptorFactory.fromResource(R.drawable.custtexture)) //setCustomTextureList(bitmapDescriptors)
+                            .addAll(mListPolylines)
+                            .useGradient(true)
+                            .width(18));
+
+                }
+            });
+            for (int i = 0; i < mMarkerList.size(); i++) {
+                mMarkerList.get(i).destroy();
+            }
+            mMarkerList.clear();
+            for (int i = 0; i < mListPolylines.size(); i++) {
+                addCrossMarkerToMap(mListPolylines, mListPolylines.get(i), i + 1);
+            }
+        } catch (Resources.NotFoundException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
+    //宽度
     private void updateSpaceLine() {
         new Thread(new Runnable() {
             @Override
@@ -432,45 +564,50 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
                                 .addAll(mListPolylines)
                                 .useGradient(true)
                                 .width(18));
-                        for (int i = 0; i < mMarkerList.size(); i++) {
-                            mMarkerList.get(i).destroy();
-                        }
-                        mMarkerList.clear();
-                        for (int i = 0; i < mListPolylines.size(); i++) {
-                            addCrossMarkerToMap(mListPolylines.get(i), i + 1);
-                        }
+
                     }
                 });
-
+                for (int i = 0; i < mMarkerList.size(); i++) {
+                    mMarkerList.get(i).destroy();
+                }
+                mMarkerList.clear();
+                for (int i = 0; i < mListPolylines.size(); i++) {
+                    addCrossMarkerToMap(mListPolylines, mListPolylines.get(i), i + 1);
+                }
             }
         }).start();
     }
 
+    /**
+     * 旋转航线和边界
+     *
+     * @param polygon
+     */
     private void drawOricFlyBoundsLines(List<LatLng> polygon) {
-
         //currentHeadDeg
         polygons = RouteUtils2.createRotatePolygon(polygon, mBoundsEWSNLatLng, currentHeadDeg);
 
         if (mPolygon != null) {
             mPolygon.remove();
         }
+        mPolygon = null;
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
+
                 //区域
                 mPolygon = drawPolygonOptions(polygons
                         , getResources().getColor(R.color.colorAccent)
                         , getResources().getColor(R.color.trgary));
-                for (int i = 0; i < markerList.size(); i++) {
-                    markerList.get(i).destroy();
-                }
-                for (int i = 0; i < polygons.size(); i++) {
-                    addMarkersToMap(polygons.get(i));
-                }
             }
         });
-
-
+        for (int i = 0; i < markerList.size(); i++) {
+            markerList.get(i).destroy();
+        }
+        for (int i = 0; i < polygons.size(); i++) {
+            addMarkersToMap(polygons.get(i));
+        }
         mListPolylines = RouteUtils2.createRotatePolygon(mListPolylines, mBoundsEWSNLatLng, currentHeadDeg);
 
         if (mHangXianPolyline != null) {
@@ -480,21 +617,24 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mHangXianPolyline = aMap.addPolyline(new PolylineOptions().zIndex(2).
-                        addAll(mListPolylines).width(4).
-                        color(getResources().getColor(R.color.hangXian)));
-                for (int j = 0; j < mMarkerList.size(); j++) {
-                    mMarkerList.get(j).remove();
-
+                if (mHangXianPolyline != null) {
+                    mHangXianPolyline.remove();
                 }
-                for (int i = 0; i < mListPolylines.size(); i++) {
-                    addCrossMarkerToMap(mListPolylines.get(i), i);
-                }
+                mHangXianPolyline = aMap.addPolyline(new PolylineOptions().
+                        setCustomTexture(BitmapDescriptorFactory.fromResource(R.drawable.custtexture)) //setCustomTextureList(bitmapDescriptors)
+                        .addAll(mListPolylines)
+                        .useGradient(true)
+                        .width(18));
 
             }
-
-
         });
+        for (int i = 0; i < mMarkerList.size(); i++) {
+            mMarkerList.get(i).destroy();
+        }
+        mMarkerList.clear();
+        for (int i = 0; i < mListPolylines.size(); i++) {
+            addCrossMarkerToMap(mListPolylines, mListPolylines.get(i), i + 1);
+        }
     }
 
     private void updateRotation() {
@@ -531,13 +671,10 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
      * 在地图上添加marker
      */
     private void addMarkersToMap(LatLng latLngs) {
-        //添加标记
         MarkerOptions mark = new MarkerOptions().position(latLngs);
         Marker marker = aMap.addMarker(mark);
-        marker.setZIndex(2);
+        marker.setZIndex(0);
         markerList.add(marker);
-        Log.e("TAG", "markerList.size:" + markerList.size() + "," + marker.getId() + "," + marker.getTitle());
-
     }
 
 
@@ -547,38 +684,50 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
      * @param i
      */
     List<Marker> mMarkerList = new ArrayList<>();
+    List<Marker> mMarkerListsss = new ArrayList<>();
 
     public void addDMarkerToMap(List<LatLng> linelatLngs, int i) {
+        if (mCenterMarker != null) {
+            mCenterMarker.destroy();
+            mCenterMarker = null;
+        }
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                View view = getInsrestPointView(String.valueOf(i));
+                View view = getInsrestPointView("中点");
                 BitmapDescriptor markerIcon = BitmapDescriptorFactory.fromView(view);
                 final MarkerOptions markerOptions = new MarkerOptions().position(linelatLngs.get(i)).icon(markerIcon).zIndex(1);
-                Marker marker = aMap.addMarker(markerOptions);
-                marker.setAnchor(0.5f, 0.9f);
-                marker.setSnippet(String.valueOf(i));
-                mMarkerList.add(marker);
+                mCenterMarker = aMap.addMarker(markerOptions);
+                mCenterMarker.setAnchor(0.5f, 0.9f);
+                mCenterMarker.setSnippet(String.valueOf(i));
+
             }
         });
 
     }
 
     public void addCrossMarkerToMap(List<LatLng> linelatLngs, int i) {
-        View view = getCrossPointView(String.valueOf(i));
-        BitmapDescriptor markerIcon = BitmapDescriptorFactory.fromView(view);
-        final MarkerOptions markerOptions = new MarkerOptions().position(linelatLngs.get(i)).icon(markerIcon).zIndex(1);
+        View view = getInsrestPointView(String.valueOf(i));
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                BitmapDescriptor markerIcon = BitmapDescriptorFactory.fromView(view);
+                final MarkerOptions markerOptions = new MarkerOptions().position(linelatLngs.get(i)).icon(markerIcon).zIndex(2);
+                Marker marker = aMap.addMarker(markerOptions);
+                marker.setAnchor(0.5f, 0.9f);
+                marker.setSnippet(String.valueOf(i));
+                mMarkerListsss.add(marker);
+            }
+        });
 
-        Marker marker = aMap.addMarker(markerOptions);
-        marker.setAnchor(0.5f, 0.9f);
-        marker.setSnippet(String.valueOf(i));
-        mMarkerList.add(marker);
     }
 
-    public void addCrossMarkerToMap(LatLng LatLng, int i) {
+    public void addCrossMarkerToMap(List<LatLng> listPolylines, LatLng LatLng, int i) {
         View view;
         if (i == 1) {
-            view = getCrossPointView("S");
+            view = getCrossPointView("起");
+        } else if (i == listPolylines.size() - 1) {
+            view = getCrossPointView("终");
         } else {
             view = getCrossPointView(String.valueOf(i));
         }
@@ -597,48 +746,6 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
 
     }
 
-    //清除
-    private void clearLine() {
-        for (int i = 0; i < mDistanceText.size(); i++) {
-            mDistanceText.get(i).destroy();
-        }
-        mDistanceText.clear();
-        if (mPolygon != null) {
-            mPolygon.remove();
-        }
-        if (mPolyline != null) {
-            mPolyline.remove();
-        }
-        if (mPolygon != null) {
-            mPolygon.remove();
-        }
-        isOK = true;
-        // aMap.clear();
-
-        for (int i = 0; i < mPolylineList.size(); i++) {
-            mPolylineList.get(i).remove();
-        }
-        if (mHangXianPolyline != null) {
-            mHangXianPolyline.remove();
-        }
-
-        // mPolygonList.clear();
-        polygons.clear();
-
-        for (int i = 0; i < markerList.size(); i++) {
-            markerList.get(i).destroy();
-        }
-        for (int i = 0; i < mMarkerList.size(); i++) {
-            mMarkerList.get(i).destroy();
-        }
-        for (int i = 0; i < crossMarkerList.size(); i++) {
-            crossMarkerList.get(i).destroy();
-        }
-        markerList.clear();
-        mLinelatLngs.clear();
-        mPolylineList.clear();
-        crossMarkerList.clear();
-    }
 
     /**
      * 设置一些amap的属性
@@ -856,10 +963,13 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
         return view;
     }
 
+    private int startPointId;
+    private int endPointId;
+
     protected View getCrossPointView(String pm_val) {
         View view = getLayoutInflater().inflate(R.layout.way_cross_point_marker, null);
         TextView markerIndexNumber = (TextView) view.findViewById(R.id.instrest_marker_index_number);
-        if (pm_val.equals("S")) {
+        if (pm_val.equals("起") || pm_val.equals("终")) {
             markerIndexNumber.setTextColor(ContextCompat.getColor(this, R.color.colorAccent));
         } else {
             markerIndexNumber.setTextColor(ContextCompat.getColor(this, R.color.black));
@@ -897,6 +1007,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
             }
         });
     }
+
 
     // Touch事件
     class CompentOnTouch implements View.OnTouchListener {
@@ -1004,4 +1115,26 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
     }
 
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //在activity执行onResume时执行mMapView.onResume ()，重新绘制加载地图
+        mMapView.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //在activity执行onPause时执行mMapView.onPause ()，暂停地图的绘制
+        mMapView.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mlocationClient.stopLocation();//停止定位后，本地定位服务并不会被销毁
+        //在activity执行onDestroy时执行mMapView.onDestroy()，销毁地图
+        mMapView.onDestroy();
+
+    }
 }

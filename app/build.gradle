@@ -58,4 +58,5 @@ dependencies {
     implementation files('libs/AMap_Location_V4.0.1_20180426.jar')
     implementation files('libs/AMap_Search_V6.1.0_20180330.jar')
     implementation files('libs/Android_Map3D_SDK_V6.2.0_20180427.jar')
+
 }

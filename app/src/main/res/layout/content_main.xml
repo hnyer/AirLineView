@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -12,7 +13,30 @@
         android:layout_height="match_parent"
         android:layout_weight="1"/>
 
+
+    <TextView
+        android:id="@+id/fly_progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:text="飞行进度调节："
+        />
+
+    <com.mvp.lt.airlineview.view.MaterialRangeSlider
+        android:id="@+id/price_slider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="10dp"
+        android:layout_marginLeft="60dp"
+        android:layout_marginRight="60dp"
+        android:layout_marginTop="10dp"
+        custom:insideRangeLineStrokeWidth="4dp"
+        custom:outsideRangeLineStrokeWidth="2dp"
+        custom:pressedTargetRadius="12dp"
+        custom:unpressedTargetRadius="6dp"/>
+
     <Button
+
         android:id="@+id/textGetBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -25,18 +49,10 @@
         android:layout_height="wrap_content"
         android:visibility="gone"/>
 
-    <com.mvp.lt.airlineview.DragScaleView
-        android:id="@+id/ds"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:clickable="true"
-        android:visibility="gone"
-        />
-
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
         android:orientation="vertical">
 
         <Button
@@ -58,6 +74,11 @@
             android:gravity="center"
             android:onClick="confirm"
             android:text="清除"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="高度："/>
 
         <EditText
             android:id="@+id/set_div_et"

@@ -133,7 +133,7 @@ public class RouteUtils2 {
     public static Double[] createLats(List<LatLng> bounds, int space) {
         Double[] integers = new Double[2];
         //线条数量
-        double steps = (distance(bounds.get(1), bounds.get(4)) / space );
+        double steps = (distance(bounds.get(1), bounds.get(4)) / space);
         //纬度差
         double lat = (bounds.get(1).latitude - bounds.get(4).latitude) / steps;
         integers[0] = steps;
@@ -141,44 +141,28 @@ public class RouteUtils2 {
         return integers;
     }
 
-    public static boolean getCrossIndexId(LatLng aa, LatLng bb, LatLng cc, LatLng dd) {
-        boolean isCunzai = false;
-        double pointx = 0;
-        double pointy = 0;
-        double delta = determinant(bb.longitude - aa.longitude,
-                cc.longitude - dd.longitude,
-                bb.latitude - aa.latitude,
-                cc.latitude - dd.latitude);
-        if (delta > (1e-6) || delta < -(1e-6))  // delta=0，排除两线段重合或平行的情况
-        {
-            double namenda = determinant(cc.longitude - aa.longitude, cc.longitude - dd.longitude,
-                    cc.latitude - aa.latitude, cc.latitude - dd.latitude) / delta;
-            double miu = determinant(bb.longitude - aa.longitude, cc.longitude - aa.longitude,
-                    bb.latitude - aa.latitude, cc.latitude - aa.latitude) / delta;
-            //求交点
-            double x = aa.longitude + namenda * (bb.longitude - aa.longitude);
-            double y = aa.latitude + namenda * (bb.latitude - aa.latitude);
-            if (cc.longitude <= dd.longitude) {
-                if (x >= cc.longitude && x <= dd.longitude) {
-                    if (x != aa.longitude && y != aa.latitude) {
-                        pointx = x;
-                        pointy = y;
-                        isCunzai = true;
-                    }
-
-                }
-            } else if (cc.longitude > dd.longitude) {
-                if (x >= dd.longitude && x <= cc.longitude) {
-                    if (x != aa.longitude && y != aa.longitude) {
-                        pointx = x;
-                        pointy = y;
-                        isCunzai = true;
-                    }
-                }
-            }
-        }
-        return isCunzai;
+    public static double determinant(double v1, double v2, double v3, double v4)  // 行列式
+    {
+        return (v1 * v3 - v2 * v4);
     }
+
+    public static boolean intersect3(Point aa, Point bb, Point cc, Point dd) {
+        double delta = determinant(bb.x - aa.x, cc.x - dd.x, bb.y - aa.y, cc.y - dd.y);
+        if (delta <= (1e-6) && delta >= -(1e-6))  // delta=0，表示两线段重合或平行
+        {
+            return false;
+        }
+        double namenda = determinant(cc.x - aa.x, cc.x - dd.x, cc.y - aa.y, cc.y - dd.y) / delta;
+        if (namenda > 1 || namenda < 0) {
+            return false;
+        }
+        double miu = determinant(bb.x - aa.x, cc.x - aa.x, bb.y - aa.y, cc.y - aa.y) / delta;
+        if (miu > 1 || miu < 0) {
+            return false;
+        }
+        return true;
+    }
+
 
     /**
      * 得到交点
@@ -226,7 +210,8 @@ public class RouteUtils2 {
         }
         return new LatLng(pointy, pointx);
     }
-    public static  int  sint(int i, int len) {
+
+    public static int sint(int i, int len) {
         if (i > len - 1) {
             return i - len;
         }
@@ -235,10 +220,11 @@ public class RouteUtils2 {
         }
         return i;
     }
-    public static double determinant(double v1, double v2, double v3, double v4)  // 行列式
-    {
-        return (v1 * v4 - v2 * v3);
-    }
+
+    //    public static double determinant(double v1, double v2, double v3, double v4)  // 行列式{
+//        return (v1*v3-v2*v4);
+//    }
+
 
     //计算纬度线 与边缘线的交点
     public void calcCrossoverPointLatlngs(List<LatLng> rect, List<LatLng> latLngList, Double[] doubles) {
@@ -249,14 +235,16 @@ public class RouteUtils2 {
     public static float distance(LatLng latLng1, LatLng latLng2) {
         return AMapUtils.calculateLineDistance(latLng1, latLng2);
     }
+
     /**
      * 求两个经纬度的中点
+     *
      * @param l1
      * @param l2
      * @return
      */
     public static LatLng getMidLatLng(LatLng l1, LatLng l2) {
-        return new LatLng((l1.latitude + l2.latitude ) / 2, (l1.longitude + l2.longitude ) / 2);
+        return new LatLng((l1.latitude + l2.latitude) / 2, (l1.longitude + l2.longitude) / 2);
     }
 
     //一段线
@@ -360,5 +348,60 @@ public class RouteUtils2 {
 
     }
 
+    //点到直线的距离
+    public static double PointToSegDist(double x, double y, double x1, double y1, double x2, double y2) {
+        double cross = (x2 - x1) * (x - x1) + (y2 - y1) * (y - y1);
+        if (cross <= 0) return Math.sqrt((x - x1) * (x - x1) + (y - y1) * (y - y1));
+        double d2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
+        if (cross >= d2) return Math.sqrt((x - x2) * (x - x2) + (y - y2) * (y - y2));
+        double r = cross / d2;
+        double px = x1 + (x2 - x1) * r;
+        double py = y1 + (y2 - y1) * r;
+        return Math.sqrt((x - px) * (x - px) + (py - y) * (py - y));
 
+    }
+
+    public static boolean onSegment(Point p, Point q, Point r) {
+        if (q.x <= Math.max(p.x, r.x)
+                && q.x >= Math.min(p.x, r.x)
+                && q.y <= Math.max(p.y, r.y)
+                && q.y >= Math.min(p.y, r.y))
+            return true;
+        return false;
+    }
+
+    public static boolean orientations(Point p, Point q, Point c) {
+        int val = (q.y - p.y) * (c.x - q.x) - (q.x - p.x) * (c.y - q.y);
+        if (val == 0) return true;  // colinear
+        return false;
+    }
+
+    /**
+     * @param p
+     * @param q
+     * @param r
+     * @return 0 --> p, q and r are colinear, 1 --> 顺时针方向, 2 --> 逆时钟方向
+     */
+    public static int orientation(Point p, Point q, Point r) {
+        int val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+        if (val == 0) return 0;  // colinear
+        return (val > 0) ? 1 : 2; // clock or counterclock wise
+    }
+
+    public static boolean doIntersect(Point p1, Point q1, Point p2, Point q2) {
+        int o1 = orientation(p1, q1, p2);
+        int o2 = orientation(p1, q1, q2);
+        int o3 = orientation(p2, q2, p1);
+        int o4 = orientation(p2, q2, q1);
+        // General case
+        if (o1 != o2 && o3 != o4) return true;
+        if (o1 == 0 && onSegment(p1, p2, q1)) return true;
+        // p1, q1 and p2 are colinear and q2 lies on segment p1q1
+        if (o2 == 0 && onSegment(p1, q2, q1)) return true;
+        // p2, q2 and p1 are colinear and p1 lies on segment p2q2
+        if (o3 == 0 && onSegment(p2, p1, q2)) return true;
+        // p2, q2 and q1 are colinear and q1 lies on segment p2q2
+        if (o4 == 0 && onSegment(p2, q1, q2)) return true;
+        return false;
+    }
 }
