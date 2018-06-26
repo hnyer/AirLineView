@@ -22,6 +22,15 @@
         android:text="飞行进度调节："
         />
 
+    <LinearLayout
+        android:id="@+id/llLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="10dp">
+    </LinearLayout>
+
     <com.mvp.lt.airlineview.view.MaterialRangeSlider
         android:id="@+id/price_slider"
         android:layout_width="match_parent"
@@ -30,6 +39,7 @@
         android:layout_marginLeft="60dp"
         android:layout_marginRight="60dp"
         android:layout_marginTop="10dp"
+        android:visibility="gone"
         custom:insideRangeLineStrokeWidth="4dp"
         custom:outsideRangeLineStrokeWidth="2dp"
         custom:pressedTargetRadius="12dp"

@@ -500,6 +500,7 @@ public class MaterialRangeSlider extends View {
     public void setMax(int max) {
         this.max = max;
         range = max - min;
+
     }
 
     /**

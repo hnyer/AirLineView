@@ -70,4 +70,6 @@
         <attr name="insideRangeLineStrokeWidth" format="dimension" />
         <attr name="outsideRangeLineStrokeWidth" format="dimension" />
     </declare-styleable>
+
+
 </resources>
