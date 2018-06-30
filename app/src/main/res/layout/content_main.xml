@@ -24,7 +24,7 @@
 
     <LinearLayout
         android:id="@+id/llLayout"
-        android:layout_width="fill_parent"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="vertical"
@@ -84,6 +84,16 @@
             android:gravity="center"
             android:onClick="confirm"
             android:text="清除"/>
+
+        <Button
+            android:id="@+id/revoker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="#22000000"
+            android:gravity="center"
+            android:onClick="confirm"
+            android:text="撤销"/>
 
         <TextView
             android:layout_width="wrap_content"

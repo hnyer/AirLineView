@@ -404,4 +404,8 @@ public class RouteUtils2 {
         if (o4 == 0 && onSegment(p2, q1, q2)) return true;
         return false;
     }
+
+
+
+
 }

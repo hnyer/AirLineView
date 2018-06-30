@@ -10,10 +10,8 @@ import android.graphics.Paint;
 import android.graphics.Paint.FontMetrics;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
-import android.widget.ImageView;
 
 import com.mvp.lt.airlineview.R;
 import com.mvp.lt.airlineview.utils.DensityUtils;
@@ -34,13 +32,12 @@ import java.math.BigDecimal;
  * @author Yao (chuan_28049@126.com)
  * @author Victor Shi (2015/8/3)
  */
-public class MyDoubleSeekBar<T extends Number> extends ImageView {
+public class MyDoubleSeekBar<T extends Number> extends android.support.v7.widget.AppCompatImageView {
     private static String TAG = MyDoubleSeekBar.class.getSimpleName();
     private Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private Paint thumbValuePaint = getThumbValuePaint();
     private Bitmap thumbImage = BitmapFactory.decodeResource(getResources(), R.drawable.thumb_normal);
     private Bitmap thumbPressedImage = BitmapFactory.decodeResource(getResources(), R.drawable.thumb_hover);
-    private Bitmap tvImage = BitmapFactory.decodeResource(getResources(), R.drawable.tv_seekbar_thumb);//thumb上方背景
 
     private float thumbWidth = thumbImage.getWidth();
     private float thumbHalfWidth = 0.5f * thumbWidth;
@@ -248,22 +245,18 @@ public class MyDoubleSeekBar<T extends Number> extends ImageView {
         switch (action & MotionEvent.ACTION_MASK) {
 
             case MotionEvent.ACTION_DOWN:
-                // Remember where the motion event started
-                // event.getPointerCount() -
-                // 1????????????????????????id??0??event.getPointerCount() - 1
+
                 mActivePointerId = event.getPointerId(event.getPointerCount() - 1);
                 pointerIndex = event.findPointerIndex(mActivePointerId);
-                mDownMotionX = event.getX(pointerIndex);// ???pointerIndex??????X????
+                mDownMotionX = event.getX(pointerIndex);//
 
-                pressedThumb = evalPressedThumb(mDownMotionX);// ?ж?touch??????????thumb??????С?thumb
-
+                pressedThumb = evalPressedThumb(mDownMotionX);//
                 // Only handle thumb presses.
                 if (pressedThumb == null)
                     return super.onTouchEvent(event);
-
-                setPressed(true);// ???????????????
-                invalidate();// ?????onDraw????
-                onStartTrackingTouch();// ??mIsDragging?true????????touch???
+                setPressed(true);
+                invalidate();
+                onStartTrackingTouch();//
                 trackTouchEvent(event);
                 attemptClaimDrag();
 
@@ -276,11 +269,9 @@ public class MyDoubleSeekBar<T extends Number> extends ImageView {
                     } else {
                         // Scroll to follow the motion event
                         pointerIndex = event.findPointerIndex(mActivePointerId);
-                        final float x = event.getX(pointerIndex);// ???????????X????
-                        // ?????е????????С???????????????л??????
+                        final float x = event.getX(pointerIndex);
                         if (Math.abs(x - mDownMotionX) > mScaledTouchSlop) {
                             setPressed(true);
-                            Log.e(TAG, "???????????С?");// ????????У?
                             invalidate();
                             onStartTrackingTouch();
                             trackTouchEvent(event);
@@ -355,9 +346,8 @@ public class MyDoubleSeekBar<T extends Number> extends ImageView {
      * @param event
      */
     private final void trackTouchEvent(MotionEvent event) {
-        final int pointerIndex = event.findPointerIndex(mActivePointerId);// ?????????index
-        final float x = event.getX(pointerIndex);// ??????pointerIndex????????x????
-
+        final int pointerIndex = event.findPointerIndex(mActivePointerId);
+        final float x = event.getX(pointerIndex);
         if (Thumb.MIN.equals(pressedThumb)) {
             // screenToNormalized(x)-->???????0-1???
             setNormalizedMinValue(screenToNormalized(x));
@@ -421,48 +411,47 @@ public class MyDoubleSeekBar<T extends Number> extends ImageView {
         paint.setStyle(Paint.Style.STROKE);
         paint.setColor(Color.BLUE);
         thumbValuePaint.setColor(Color.BLUE);
-        Bitmap l_bg = BitmapFactory.decodeResource(getResources(), R.drawable.red_seekbar);
+//        Bitmap l_bg = BitmapFactory.decodeResource(getResources(), R.drawable.red_seekbar);
+//
+//        Bitmap m_bg = BitmapFactory.decodeResource(getResources(), R.drawable.yellow_seekbar);
+//
+//        Bitmap r_bg = BitmapFactory.decodeResource(getResources(), R.drawable.green_seekbar);
+//
+//        Bitmap m_progress = BitmapFactory.decodeResource(getResources(), R.drawable.yellow_seekbar);
 
-        Bitmap m_bg = BitmapFactory.decodeResource(getResources(), R.drawable.yellow_seekbar);
+        canvas.drawLine(padding - thumbHalfWidth + +DensityUtils.dpToPx(4), mMY, 0.5f * (getHeight()), mMY, paint);
+        float bg_middle_left = padding - thumbHalfWidth;// 获取初始状态下中间部分的左边界坐标
+        float bg_middle_right = getWidth() - padding + thumbHalfWidth;// 获取初始状态下中间部分的右边界坐标
 
-        Bitmap r_bg = BitmapFactory.decodeResource(getResources(), R.drawable.green_seekbar);
+        canvas.drawLine(bg_middle_left+DensityUtils.dpToPx(20), mMY, 0.5f * (getHeight()), mMY, paint);
 
-        Bitmap m_progress = BitmapFactory.decodeResource(getResources(), R.drawable.yellow_seekbar);
-
-        canvas.drawLine(padding - thumbHalfWidth, mMY, 0.5f * (getHeight() - l_bg.getHeight()), mMY, paint);
-        float bg_middle_left = padding - thumbHalfWidth + l_bg.getWidth();// 获取初始状态下中间部分的左边界坐标
-        float bg_middle_right = getWidth() - padding + thumbHalfWidth - l_bg.getWidth();// 获取初始状态下中间部分的右边界坐标
-
-        canvas.drawLine(bg_middle_left, mMY, 0.5f * (getHeight() - m_bg.getHeight()), mMY, paint);
-
-        canvas.drawLine(bg_middle_right, mMY, 0.5f * (getHeight() - r_bg.getHeight()), mMY, paint);
+        canvas.drawLine(bg_middle_right-DensityUtils.dpToPx(5), mMY, 0.5f * (getHeight()), mMY, paint);
         float rangeL = normalizedToScreen(normalizedMinValue);
         float rangeR = normalizedToScreen(normalizedMaxValue);
 
-        float left_scale = rangeL / l_bg.getWidth(); //左边缩放比例
-        float pro_scale = (rangeR - rangeL) / m_progress.getWidth(); //中间缩放比例
-        float right_scale = (getWidth() - rangeR) / r_bg.getWidth(); //右边缩放比例
+        float left_scale = rangeL; //左边缩放比例
+        float pro_scale = (rangeR - rangeL); //中间缩放比例
+        float right_scale = (getWidth() - rangeR); //右边缩放比例
         if (left_scale > 0) {
-            canvas.drawLine(padding - thumbHalfWidth, mMY, 0.5f * (getHeight() - l_bg.getHeight()), mMY, paint);
+            canvas.drawLine(padding - thumbHalfWidth+DensityUtils.dpToPx(20), mMY, 0.5f * (getHeight()), mMY, paint);
         }
         if (pro_scale > 0) {
 
             Matrix pro_mx = new Matrix();
             pro_mx.postScale(pro_scale, 1f);
             try {
-                canvas.drawLine(rangeL, mMY, 0.5f * (getHeight() - m_progress.getHeight()), mMY, paint);
+                canvas.drawLine(rangeL+DensityUtils.dpToPx(20), mMY, 0.5f * (getHeight()), mMY, paint);
             } catch (Exception e) {
-                Log.e(TAG,
-                        "IllegalArgumentException--width=" + m_progress.getWidth() + "Height=" + m_progress.getHeight()
-                                + "pro_scale=" + pro_scale, e);
+
 
             }
 
         }
+
         if (right_scale > 0) {
             Matrix right_mx = new Matrix();
             right_mx.postScale(right_scale, 1f);
-            canvas.drawLine(rangeR, mMY, 0.5f * (getHeight() - r_bg.getHeight()), mMY, paint);
+            canvas.drawLine(rangeR, mMY, 0.5f * (getHeight()), mMY, paint);
         }
 
         //绘画左右两个游标
@@ -472,7 +461,7 @@ public class MyDoubleSeekBar<T extends Number> extends ImageView {
 
         drawThumb(normalizedToScreen(normalizedMinValue), Thumb.MIN.equals(pressedThumb), canvas);
 
-        drawThumb(normalizedToScreen(normalizedMaxValue), Thumb.MAX.equals(pressedThumb), canvas);
+        drawRightThumb(normalizedToScreen(normalizedMaxValue), Thumb.MAX.equals(pressedThumb), canvas);
 
     }
 
@@ -512,7 +501,11 @@ public class MyDoubleSeekBar<T extends Number> extends ImageView {
      * @param canvas      The canvas to draw upon.
      */
     private void drawThumb(float screenCoord, boolean pressed, Canvas canvas) {
-        canvas.drawBitmap(pressed ? thumbPressedImage : thumbImage, screenCoord - thumbHalfWidth - DensityUtils.dpToPx(4),
+        canvas.drawBitmap(pressed ? thumbPressedImage : thumbImage, screenCoord - thumbHalfWidth,
+                (float) ((0.5f * getHeight()) - thumbHalfHeight), paint);
+    }
+    private void drawRightThumb(float screenCoord, boolean pressed, Canvas canvas) {
+        canvas.drawBitmap(pressed ? thumbPressedImage : thumbImage, screenCoord - thumbHalfWidth+DensityUtils.dpToPx(2),
                 (float) ((0.5f * getHeight()) - thumbHalfHeight), paint);
     }
 
@@ -535,17 +528,17 @@ public class MyDoubleSeekBar<T extends Number> extends ImageView {
             // 左游标与右游标重叠
             if (pressedThumb == Thumb.MIN) {
                 // touch???min
-                canvas.drawText(text, maxThumbleft - getFontlength(thumbValuePaint, text) + DensityUtils.dpToPx(10),
+                canvas.drawText(text, maxThumbleft - getFontlength(thumbValuePaint, text) + DensityUtils.dpToPx(15),
                         (float) ((0.4f * getHeight()) - thumbHalfHeight) - 3, thumbValuePaint);
 
             } else {
-                canvas.drawText(text, textRight - getFontlength(thumbValuePaint, text) + DensityUtils.dpToPx(10),
+                canvas.drawText(text, textRight - getFontlength(thumbValuePaint, text) + DensityUtils.dpToPx(15),
                         (float) ((0.4f * getHeight()) - thumbHalfHeight) - 3, thumbValuePaint);
             }
 
         } else {
 
-            canvas.drawText(text, screenCoord - thumbHalfWidth + DensityUtils.dpToPx(10), (float) ((0.4f * getHeight()) - thumbHalfHeight) - 3,
+            canvas.drawText(text, screenCoord - thumbHalfWidth + DensityUtils.dpToPx(15), (float) ((0.4f * getHeight()) - thumbHalfHeight) - 3,
                     thumbValuePaint);
 
         }
@@ -571,18 +564,18 @@ public class MyDoubleSeekBar<T extends Number> extends ImageView {
         if (textRight >= getWidth()) {
             // 右边界超出or等于seekbar宽度
 
-            canvas.drawText(text, getWidth() - getFontlength(thumbValuePaint, text) - DensityUtils.dpToPx(1),
+            canvas.drawText(text, getWidth() - getFontlength(thumbValuePaint, text) + DensityUtils.dpToPx(1),
                     (float) ((0.4f * getHeight()) - thumbHalfHeight) - 3, thumbValuePaint);
 
         } else if ((screenCoord - thumbHalfWidth) <= minThumbValueRight) {
             // 左右游标重叠
             if (pressedThumb == Thumb.MAX) {
 
-                canvas.drawText(text, minThumbValueRight + DensityUtils.dpToPx(10), (float) ((0.4f * getHeight()) - thumbHalfHeight) - 3,
+                canvas.drawText(text, minThumbValueRight + DensityUtils.dpToPx(15), (float) ((0.4f * getHeight()) - thumbHalfHeight) - 3,
                         thumbValuePaint);
 
             } else {
-                canvas.drawText(text, screenCoord - thumbHalfWidth + DensityUtils.dpToPx(10),
+                canvas.drawText(text, screenCoord - thumbHalfWidth + DensityUtils.dpToPx(15),
                         (float) ((0.4f * getHeight()) - thumbHalfHeight) - 3, thumbValuePaint);
 
             }
@@ -590,7 +583,7 @@ public class MyDoubleSeekBar<T extends Number> extends ImageView {
         } else {
             //正常情况
 
-            canvas.drawText(text, screenCoord - thumbHalfWidth + DensityUtils.dpToPx(10), (float) ((0.4f * getHeight()) - thumbHalfHeight) - 3,
+            canvas.drawText(text, screenCoord - thumbHalfWidth + DensityUtils.dpToPx(15), (float) ((0.4f * getHeight()) - thumbHalfHeight) - 3,
                     thumbValuePaint);
         }
 
@@ -662,8 +655,7 @@ public class MyDoubleSeekBar<T extends Number> extends ImageView {
      * @return true if x-coordinate is in thumb range, false otherwise.
      */
     private boolean isInThumbRange(float touchX, double normalizedThumbValue) {
-        // ?????????X????-??С???????????????X???????<=??С????????????
-        // ???ж???????????????С??????????????????????????
+
         return Math.abs(touchX - normalizedToScreen(normalizedThumbValue)) <= thumbHalfWidth;
     }
 
@@ -675,7 +667,7 @@ public class MyDoubleSeekBar<T extends Number> extends ImageView {
      */
     public void setNormalizedMinValue(double value) {
         normalizedMinValue = Math.max(0d, Math.min(1d, Math.min(value, normalizedMaxValue)));
-        invalidate();// ????????view
+        invalidate();
     }
 
     /**

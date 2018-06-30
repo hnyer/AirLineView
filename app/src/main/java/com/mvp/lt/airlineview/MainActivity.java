@@ -28,6 +28,7 @@ import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.AMapUtils;
 import com.amap.api.maps.CameraUpdateFactory;
+import com.amap.api.maps.CoordinateConverter;
 import com.amap.api.maps.LocationSource;
 import com.amap.api.maps.MapView;
 import com.amap.api.maps.UiSettings;
@@ -92,6 +93,8 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
     TextView mFlyProgress;
     @BindView(R.id.llLayout)
     LinearLayout mLlLayout;
+    @BindView(R.id.revoker)
+    Button mRevoker;
 
     //定位监听
     private OnLocationChangedListener mListener = null;
@@ -108,17 +111,18 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
     //航线拐点 经纬度坐标点 与屏幕点对应
     private List<LatLng> mLinelatLngs = new ArrayList<>();
 
-    //所选 选点的marker
-    private List<Marker> markerList = new ArrayList<>();
-    private List<Marker> crossMarkerList = new ArrayList<>();
-    //选点 经纬度集合
+    //范围点marker
+    private List<Marker> missionFpv4Markes = new ArrayList<>();
+    //飞行航线点marker
+    private List<Marker> wayPointsmarkerList = new ArrayList<>();
+    //地图上 选点 经纬度集合
     private List<LatLng> polygons = new ArrayList<LatLng>();
+
     private List<LatLng> rPolygons;
 
     //多边形
     private Polygon mPolygon = null;
     public Polyline mPolyline;
-
     private Polyline mHangXianPolyline1;
     private Polyline mHangXianPolyline2;
     private SetHeadDegReduceThread mSetHeadDegReduceThread;
@@ -138,6 +142,8 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
     private List<Text> mDistanceText = new ArrayList<Text>();
     private Marker mCenterMarker;
     private MyDoubleSeekBar<Integer> mDoubleSeekbar;
+    List<Integer> mIntegerList = new ArrayList<>();
+    int lastMarkerLatlngId = 0;
 
     //清除
     private void clearLine() {
@@ -163,27 +169,26 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
         }
         // mPolygonList.clear();
         polygons.clear();
-        for (int i = 0; i < markerList.size(); i++) {
-            markerList.get(i).destroy();
+
+        for (int i = 0; i < wayPointsmarkerList.size(); i++) {
+            wayPointsmarkerList.get(i).destroy();
         }
-        for (int i = 0; i < mMarkerList.size(); i++) {
-            mMarkerList.get(i).destroy();
+        wayPointsmarkerList.clear();
+        for (int i = 0; i < wayPointsmarkerList.size(); i++) {
+            wayPointsmarkerList.get(i).destroy();
         }
-        for (int i = 0; i < crossMarkerList.size(); i++) {
-            crossMarkerList.get(i).destroy();
+
+        for (int i = 0; i < missionFpv4Markes.size(); i++) {
+            missionFpv4Markes.get(i).destroy();
         }
-        for (int i = 0; i < mMarkerListsss.size(); i++) {
-            mMarkerListsss.get(i).destroy();
-        }
-        mMarkerListsss.clear();
+        missionFpv4Markes.clear();
         if (mCenterMarker != null) {
             mCenterMarker.destroy();
             mCenterMarker = null;
         }
-        markerList.clear();
+
         mLinelatLngs.clear();
         mPolylineList.clear();
-        crossMarkerList.clear();
     }
 
     private List<LatLng> mNewListPolylines;
@@ -194,37 +199,13 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        //双游标自定义seekbar
         mDoubleSeekbar = new MyDoubleSeekBar<Integer>(0, 100, this);
         mDoubleSeekbar.setOnRangeSeekBarChangeListener(new MyDoubleSeekBar.OnRangeSeekBarChangeListener<Integer>() {
             @Override
             public void onRangeSeekBarValuesChanged(MyDoubleSeekBar<?> bar, Integer minValue, Integer maxValue) {
                 // TODO 左右游标滑动监听事件
                 Log.e("onValuesChanged", minValue + "" + maxValue);
-
-                if (mHangXianPolyline1 != null) {
-                    mHangXianPolyline1.remove();
-                }
-                mNewListPolylines = new ArrayList<>();
-
-                for (int i = minValue - 1; i < maxValue; i++) {
-                    mNewListPolylines.add(mListPolylines.get(i));
-
-                }
-
-                mHangXianPolyline1 = aMap.addPolyline(new PolylineOptions().
-                        setCustomTexture(BitmapDescriptorFactory.fromResource(R.drawable.custtexture))
-                        .addAll(mNewListPolylines)
-                        .useGradient(true)
-                        .width(18));
-
-                for (int i = 0; i < mMarkerList.size(); i++) {
-                    mMarkerList.get(i).destroy();
-                }
-                mMarkerList.clear();
-                for (int i = 0; i < mNewListPolylines.size(); i++) {
-                    addCrossMarkerToMap(mNewListPolylines, mNewListPolylines.get(i), i + 1);
-                }
+                updateDoubleSeekbarFlyWayPoint(minValue, maxValue);
             }
         });
 
@@ -267,7 +248,74 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
                 }
             }
         });
+        mRevoker.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //撤销一个航点
+                //更新seekbar
+                //更新航线
+                revokerOrcPoints();
 
+            }
+        });
+    }
+
+    public void revokerOrcPoints() {
+        if (mIntegerList.size() > 0) {
+            int id = mIntegerList.get(mIntegerList.size() - 1);
+            Log.e("mRevoker", "onClick: " + id);
+            polygons.remove(id);
+            mIntegerList.remove(id);
+            missionFpv4Markes.get(id).destroy();
+            missionFpv4Markes.remove(id);
+            //清除航线
+            //航点
+            for (int i = 0; i < missionFpv4Markes.size(); i++) {
+                missionFpv4Markes.get(i).destroy();
+            }
+            for (int i = 0; i < polygons.size(); i++) {
+                addRangeMarkerToMap(polygons.get(i), i);
+
+            }
+            drawWaypointOrcPicture();
+            if (mIntegerList.size() == 0) {
+                mPolygon = null;
+            }
+        } else {
+            mPolygon = null;
+            polygons.clear();
+            mIntegerList.clear();
+            missionFpv4Markes.clear();
+        }
+    }
+
+    private void updateDoubleSeekbarFlyWayPoint(Integer minValue, Integer maxValue) {
+        if (mListPolylines == null || mListPolylines.size() == 0) {
+            return;
+        }
+        if (mHangXianPolyline1 != null) {
+            mHangXianPolyline1.remove();
+        }
+        mNewListPolylines = new ArrayList<>();
+
+        for (int i = minValue - 1; i < maxValue; i++) {
+            mNewListPolylines.add(mListPolylines.get(i));
+
+        }
+
+        mHangXianPolyline1 = aMap.addPolyline(new PolylineOptions().
+                setCustomTexture(BitmapDescriptorFactory.fromResource(R.drawable.map_alr))
+                .addAll(mNewListPolylines)
+                .useGradient(true)
+                .width(18));
+
+        for (int i = 0; i < wayPointsmarkerList.size(); i++) {
+            wayPointsmarkerList.get(i).destroy();
+        }
+        wayPointsmarkerList.clear();
+        for (int i = 0; i < mNewListPolylines.size(); i++) {
+            addCrossMarkerToMap(mNewListPolylines, mNewListPolylines.get(i), i + 1);
+        }
     }
 
     @Override
@@ -285,7 +333,6 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
     public void onMapClick(LatLng latLng) {
         Vibrator vibrator = (Vibrator) this.getSystemService(this.VIBRATOR_SERVICE);
         vibrator.vibrate(100);
-        addMarkersToMap(latLng);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -313,6 +360,8 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
                         int index = list.indexOf(x);
                         Log.e("多边形内index", index + "");
                         polygons.add(index + 1, latLng);
+                        lastMarkerLatlngId = index + 1;
+                        mIntegerList.add(lastMarkerLatlngId);
                     } else {
                         //在多边形外
                         //是否有交点
@@ -328,8 +377,23 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
                                         RouteUtils2.latlng2px(aMap, latLng),
                                         RouteUtils2.latlng2px(aMap, latLng1),
                                         RouteUtils2.latlng2px(aMap, latLng2));
-
                                 if (iscross) {
+                                    //计算距离
+                                    //计算距离
+                                    if (AMapUtils.calculateLineDistance(polygons.get(i), latLng) > 2000
+                                            || AMapUtils.calculateLineDistance(polygons.get(0), latLng) > 2000) {
+                                        Log.e("", "距离过大");
+                                        missionFpv4Markes.get(missionFpv4Markes.size() - 1).destroy();
+                                        return;
+                                    }
+                                    if (AMapUtils.calculateLineDistance(polygons.get(i), latLng) < 0.5
+                                            || AMapUtils.calculateLineDistance(polygons.get(0), latLng) < 0.5) {
+                                        Log.e("", "距离过小");
+                                        missionFpv4Markes.get(missionFpv4Markes.size() - 1).destroy();
+                                        return;
+                                    }
+                                    lastMarkerLatlngId = i + 1;
+                                    mIntegerList.add(lastMarkerLatlngId);
                                     polygons.add(i + 1, latLng);
                                     break;
                                 } else {
@@ -355,6 +419,36 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
                                     }
                                     float maxd = Collections.min(integerList);
                                     int j = integerList.indexOf(maxd);
+                                    //计算距离
+                                    if (j == integerList.size()) {
+                                        if (AMapUtils.calculateLineDistance(polygons.get(j), latLng) > 2000
+                                                || AMapUtils.calculateLineDistance(polygons.get(0), latLng) > 2000) {
+                                            Log.e("", "距离过大");
+                                            missionFpv4Markes.get(missionFpv4Markes.size() - 1).destroy();
+                                            return;
+                                        }
+                                        if (AMapUtils.calculateLineDistance(polygons.get(j), latLng) < 0.5
+                                                || AMapUtils.calculateLineDistance(polygons.get(0), latLng) < 0.5) {
+                                            Log.e("", "距离过小");
+                                            missionFpv4Markes.get(missionFpv4Markes.size() - 1).destroy();
+                                            return;
+                                        }
+                                    } else {
+                                        if (AMapUtils.calculateLineDistance(polygons.get(j), latLng) > 2000
+                                                || AMapUtils.calculateLineDistance(polygons.get(j + 1), latLng) > 2000) {
+                                            Log.e("", "距离过大");
+                                            missionFpv4Markes.get(missionFpv4Markes.size() - 1).destroy();
+                                            return;
+                                        }
+                                        if (AMapUtils.calculateLineDistance(polygons.get(j), latLng) < 0.5
+                                                || AMapUtils.calculateLineDistance(polygons.get(j + 1), latLng) < 0.5) {
+                                            Log.e("", "距离过小");
+                                            missionFpv4Markes.get(missionFpv4Markes.size() - 1).destroy();
+                                            return;
+                                        }
+                                    }
+                                    lastMarkerLatlngId = j + 1;
+                                    mIntegerList.add(lastMarkerLatlngId);
                                     polygons.add(j + 1, latLng);
                                     Log.e("多边形外交点,中点在多边形内", ":" + true);
                                 }
@@ -368,6 +462,21 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
                                         RouteUtils2.latlng2px(aMap, latLng2));
                                 Log.e("多边形外交点", i + ":" + iscross);
                                 if (iscross) {
+                                    //计算距离
+                                    if (AMapUtils.calculateLineDistance(polygons.get(i), latLng) > 2000
+                                            || AMapUtils.calculateLineDistance(polygons.get(i + 1), latLng) > 2000) {
+                                        Log.e("", "距离过大");
+                                        missionFpv4Markes.get(missionFpv4Markes.size() - 1).destroy();
+                                        return;
+                                    }
+                                    if (AMapUtils.calculateLineDistance(polygons.get(i), latLng) < 0.5
+                                            || AMapUtils.calculateLineDistance(polygons.get(i + 1), latLng) < 0.5) {
+                                        Log.e("", "距离过小");
+                                        missionFpv4Markes.get(missionFpv4Markes.size() - 1).destroy();
+                                        return;
+                                    }
+                                    lastMarkerLatlngId = i + 1;
+                                    mIntegerList.add(lastMarkerLatlngId);
                                     polygons.add(i + 1, latLng);
                                     break;
                                 }
@@ -376,73 +485,108 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
                         }
                     }
                 } else {
-                    polygons.add(latLng);
-                }
-                for (int i = 0; i < mMarkerListsss.size(); i++) {
-                    if (mMarkerListsss.get(i) != null) {
-                        mMarkerListsss.get(i).destroy();
+                    //计算距离
+                    if (polygons.size() > 0) {
+                        if (AMapUtils.calculateLineDistance(polygons.get(0), latLng) > 2000) {
+                            Log.e("", "距离过大");
+                            missionFpv4Markes.get(missionFpv4Markes.size() - 1).destroy();
+                            return;
+                        }
+                        if (AMapUtils.calculateLineDistance(polygons.get(0), latLng) < 0.5) {
+                            Log.e("", "距离过小");
+                            missionFpv4Markes.get(missionFpv4Markes.size() - 1).destroy();
+                            return;
+                        }
+                        polygons.add(latLng);
+                        lastMarkerLatlngId = polygons.size() - 1;
+                        mIntegerList.add(lastMarkerLatlngId);
+                    } else {
+                        polygons.add(latLng);
+                        lastMarkerLatlngId = polygons.size() - 1;
+                        mIntegerList.add(lastMarkerLatlngId);
 
                     }
+
+
+                }
+                for (int i = 0; i < missionFpv4Markes.size(); i++) {
+                    missionFpv4Markes.get(i).destroy();
                 }
                 for (int i = 0; i < polygons.size(); i++) {
-                    addCrossMarkerToMap(polygons, i);
+                    addRangeMarkerToMap(polygons.get(i), i);
                 }
-                if (mPolygon != null) {
-                    mPolygon.remove();
-                }
-                if (polygons.size() < 2) {
-                    return;
-                }
-                if (polygons.size() > 2) {
-                    if (mPolyline != null) {
-                        mPolyline.remove();
-                    }
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            //区域
-                            mPolygon = drawPolygonOptions(polygons
-                                    , getResources().getColor(R.color.gary)
-                                    , getResources().getColor(R.color.trgary));
-                        }
-                    });
-                } else {
-                    mPolyline = drawPolyLineOptions(polygons
-                            , getResources().getColor(R.color.gary)
-                            , getResources().getColor(R.color.trgary));
-                }
-                for (int i = 0; i < mDistanceText.size(); i++) {
-                    if (mDistanceText.get(i) != null)
-                        mDistanceText.get(i).destroy();
-                }
-                mDistanceText.clear();
-                //计算中点距离
-                for (int i = 0; i < polygons.size(); i++) {
-                    LatLng latLng1;
-                    LatLng latLng2;
-                    if (i == polygons.size() - 1) {
-                        latLng1 = polygons.get(i);
-                        latLng2 = polygons.get(0);
-                    } else {
-                        latLng1 = polygons.get(i);
-                        latLng2 = polygons.get(i + 1);
-                    }
-                    float distance = (float) (Math.round(AMapUtils.calculateLineDistance(latLng1, latLng2) * 10)) / 10;
-                    LatLng mediaLatlng = RouteUtils2.getMidLatLng(latLng1, latLng2);
-                    if (!mDistanceText.contains(mediaLatlng))
-                        mDistanceText.add(aMap.addText(
-                                new TextOptions().position(mediaLatlng).fontColor(fenColor)
-                                        .backgroundColor(backColor).text(distance + "米")
-                        ));
-                }
-                // 1
-                mBoundsEWSNLatLng = RouteUtils2.createPolygonBounds(polygons);
-                addDMarkerToMap(mBoundsEWSNLatLng, 0);
-                drawOricFlyLines(polygons);
+                drawWaypointOrcPicture();
 
             }
         }).start();
 
+    }
+
+    private void drawWaypointOrcPicture() {
+
+        for (int i = 0; i < wayPointsmarkerList.size(); i++) {
+            wayPointsmarkerList.get(i).destroy();
+        }
+        wayPointsmarkerList.clear();
+        if (mPolygon != null) {
+            mPolygon.remove();
+            mPolygon = null;
+        }
+        if (polygons.size() < 2) {
+            if (mPolyline != null) {
+                mPolyline.remove();
+            }
+            return;
+        }
+        if (polygons.size() > 2) {
+            if (mPolyline != null) {
+                mPolyline.remove();
+            }
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    //区域
+                    mPolygon = drawPolygonOptions(polygons
+                            , getResources().getColor(R.color.gary)
+                            , getResources().getColor(R.color.trgary));
+                }
+            });
+        } else {
+            if (mPolyline != null) {
+                mPolyline.remove();
+            }
+            mPolyline = drawPolyLineOptions(polygons
+                    , getResources().getColor(R.color.gary)
+                    , getResources().getColor(R.color.trgary));
+        }
+        for (int i = 0; i < mDistanceText.size(); i++) {
+            if (mDistanceText.get(i) != null)
+                mDistanceText.get(i).destroy();
+        }
+        mDistanceText.clear();
+        //计算中点距离
+        for (int i = 0; i < polygons.size(); i++) {
+            LatLng latLng1;
+            LatLng latLng2;
+            if (i == polygons.size() - 1) {
+                latLng1 = polygons.get(i);
+                latLng2 = polygons.get(0);
+            } else {
+                latLng1 = polygons.get(i);
+                latLng2 = polygons.get(i + 1);
+            }
+            float distance = (float) (Math.round(AMapUtils.calculateLineDistance(latLng1, latLng2) * 10)) / 10;
+            LatLng mediaLatlng = RouteUtils2.getMidLatLng(latLng1, latLng2);
+            if (!mDistanceText.contains(mediaLatlng))
+                mDistanceText.add(aMap.addText(
+                        new TextOptions().position(mediaLatlng).fontColor(fenColor)
+                                .backgroundColor(backColor).text(distance + "米")
+                ));
+        }
+        // 1
+        mBoundsEWSNLatLng = RouteUtils2.createPolygonBounds(polygons);
+        //  addDMarkerToMap(mBoundsEWSNLatLng, 0);
+        drawOricFlyLines(polygons);
     }
 
     /***
@@ -451,9 +595,18 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
      */
     private void drawOricFlyLines(List<LatLng> polygons) {
         if (polygons.size() < 3) {
+            if (mHangXianPolyline1 != null) {
+                mHangXianPolyline1.remove();
+            }
+            if (mHangXianPolyline2 != null) {
+                mHangXianPolyline2.remove();
+            }
+            for (int i = 0; i < wayPointsmarkerList.size(); i++) {
+                wayPointsmarkerList.get(i).destroy();
+            }
+            wayPointsmarkerList.clear();
             return;
         }
-
         try {
             rPolygons = RouteUtils2.createRotatePolygon(polygons, mBoundsEWSNLatLng, -currentHeadDeg);
             mRBoundsEWSNLatLng = RouteUtils2.createPolygonBounds(rPolygons);
@@ -497,9 +650,8 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
                     polylines.add(latLng2);
                 }
                 mListPolylines = RouteUtils2.createRotatePolygon(polylines, mBoundsEWSNLatLng, currentHeadDeg);
-                startPointId = 0;
-                endPointId = mListPolylines.size() - 1;
 
+                mNewListPolylines = mListPolylines;
             }
             //划线
             runOnUiThread(new Runnable() {
@@ -517,7 +669,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
                             .width(5));
 
                     mHangXianPolyline1 = aMap.addPolyline(new PolylineOptions().
-                            setCustomTexture(BitmapDescriptorFactory.fromResource(R.drawable.custtexture)) //setCustomTextureList(bitmapDescriptors)
+                            setCustomTexture(BitmapDescriptorFactory.fromResource(R.drawable.map_alr)) //setCustomTextureList(bitmapDescriptors)
                             .addAll(mListPolylines)
                             .useGradient(true)
                             .width(20));
@@ -533,10 +685,10 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
 
                 }
             });
-            for (int i = 0; i < mMarkerList.size(); i++) {
-                mMarkerList.get(i).destroy();
+            for (int i = 0; i < wayPointsmarkerList.size(); i++) {
+                wayPointsmarkerList.get(i).destroy();
             }
-            mMarkerList.clear();
+            wayPointsmarkerList.clear();
             for (int i = 0; i < mListPolylines.size(); i++) {
                 addCrossMarkerToMap(mListPolylines, mListPolylines.get(i), i + 1);
             }
@@ -617,7 +769,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
                                 .useGradient(true)
                                 .width(5));
                         mHangXianPolyline1 = aMap.addPolyline(new PolylineOptions().
-                                setCustomTexture(BitmapDescriptorFactory.fromResource(R.drawable.custtexture)) //setCustomTextureList(bitmapDescriptors)
+                                setCustomTexture(BitmapDescriptorFactory.fromResource(R.drawable.map_alr)) //setCustomTextureList(bitmapDescriptors)
                                 .addAll(mListPolylines)
                                 .useGradient(true)
                                 .width(20));
@@ -631,10 +783,10 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
                         Log.e("TAG", "min:" + mPriceSlider.getMin());
                     }
                 });
-                for (int i = 0; i < mMarkerList.size(); i++) {
-                    mMarkerList.get(i).destroy();
+                for (int i = 0; i < wayPointsmarkerList.size(); i++) {
+                    wayPointsmarkerList.get(i).destroy();
                 }
-                mMarkerList.clear();
+                wayPointsmarkerList.clear();
                 for (int i = 0; i < mListPolylines.size(); i++) {
                     addCrossMarkerToMap(mListPolylines, mListPolylines.get(i), i + 1);
                 }
@@ -666,8 +818,8 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
                         , getResources().getColor(R.color.trgary));
             }
         });
-        for (int i = 0; i < markerList.size(); i++) {
-            markerList.get(i).destroy();
+        for (int i = 0; i < missionFpv4Markes.size(); i++) {
+            missionFpv4Markes.get(i).destroy();
         }
         for (int i = 0; i < polygons.size(); i++) {
             addMarkersToMap(polygons.get(i));
@@ -689,7 +841,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
                         .useGradient(true)
                         .width(5));
                 mHangXianPolyline1 = aMap.addPolyline(new PolylineOptions().
-                        setCustomTexture(BitmapDescriptorFactory.fromResource(R.drawable.custtexture)) //setCustomTextureList(bitmapDescriptors)
+                        setCustomTexture(BitmapDescriptorFactory.fromResource(R.drawable.map_alr)) //setCustomTextureList(bitmapDescriptors)
                         .addAll(mListPolylines)
                         .useGradient(true)
                         .width(20));
@@ -697,10 +849,10 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
 
             }
         });
-        for (int i = 0; i < mMarkerList.size(); i++) {
-            mMarkerList.get(i).destroy();
+        for (int i = 0; i < wayPointsmarkerList.size(); i++) {
+            wayPointsmarkerList.get(i).destroy();
         }
-        mMarkerList.clear();
+        wayPointsmarkerList.clear();
         for (int i = 0; i < mListPolylines.size(); i++) {
             addCrossMarkerToMap(mListPolylines, mListPolylines.get(i), i + 1);
         }
@@ -742,59 +894,61 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
         MarkerOptions mark = new MarkerOptions().position(latLngs);
         Marker marker = aMap.addMarker(mark);
         marker.setZIndex(0);
-        markerList.add(marker);
-    }
-
-
-    /**
-     * 顶点
-     *
-     * @param i
-     */
-    List<Marker> mMarkerList = new ArrayList<>();
-    List<Marker> mMarkerListsss = new ArrayList<>();
-
-    public void addDMarkerToMap(List<LatLng> linelatLngs, int i) {
-        if (mCenterMarker != null) {
-            mCenterMarker.destroy();
-            mCenterMarker = null;
-        }
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                View view = getInsrestPointView("中点");
-                BitmapDescriptor markerIcon = BitmapDescriptorFactory.fromView(view);
-                final MarkerOptions markerOptions = new MarkerOptions().position(linelatLngs.get(i)).icon(markerIcon).zIndex(1);
-                mCenterMarker = aMap.addMarker(markerOptions);
-                mCenterMarker.setAnchor(0.5f, 0.9f);
-                mCenterMarker.setSnippet(String.valueOf(i));
-
-            }
-        });
 
     }
 
-    public void addCrossMarkerToMap(List<LatLng> linelatLngs, int i) {
-        View view = getInsrestPointView(String.valueOf(i));
+//
+//    /**
+//     * 顶点
+//     *
+//     * @param i
+//     */
+//
+//
+//    public void addDMarkerToMap(List<LatLng> linelatLngs, int i) {
+//        if (mCenterMarker != null) {
+//            mCenterMarker.destroy();
+//            mCenterMarker = null;
+//        }
+//        runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//                View view = getInsrestPointView("中点");
+//                BitmapDescriptor markerIcon = BitmapDescriptorFactory.fromView(view);
+//                final MarkerOptions markerOptions = new MarkerOptions().position(linelatLngs.get(i)).icon(markerIcon).zIndex(1);
+//                mCenterMarker = aMap.addMarker(markerOptions);
+//                mCenterMarker.setAnchor(0.5f, 0.9f);
+//                mCenterMarker.setSnippet(String.valueOf(i));
+//
+//            }
+//        });
+//
+//    }
+
+    //范围点
+    public void addRangeMarkerToMap(LatLng latLng, int id) {
+        View view = getInsrestPointView(String.valueOf(id + 1));
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 BitmapDescriptor markerIcon = BitmapDescriptorFactory.fromView(view);
-                final MarkerOptions markerOptions = new MarkerOptions().position(linelatLngs.get(i)).icon(markerIcon).zIndex(2);
+                final MarkerOptions markerOptions = new MarkerOptions().position(latLng).icon(markerIcon).zIndex(2);
                 Marker marker = aMap.addMarker(markerOptions);
                 marker.setAnchor(0.5f, 0.9f);
-                marker.setSnippet(String.valueOf(i));
-                mMarkerListsss.add(marker);
+                marker.setDraggable(true);
+                marker.setSnippet(String.valueOf(id));
+                missionFpv4Markes.add(marker);
             }
         });
 
     }
 
+    //航线点
     public void addCrossMarkerToMap(List<LatLng> listPolylines, LatLng LatLng, int i) {
         View view;
         if (i == 1) {
             view = getCrossPointView("起");
-        } else if (i == listPolylines.size() ) {
+        } else if (i == listPolylines.size()) {
             view = getCrossPointView("终");
         } else {
             view = getCrossPointView(String.valueOf(i));
@@ -807,7 +961,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
                 Marker marker = aMap.addMarker(markerOptions);
                 marker.setAnchor(0.5f, 0.9f);
                 marker.setSnippet(String.valueOf(i));
-                mMarkerList.add(marker);
+                wayPointsmarkerList.add(marker);
             }
         });
 
@@ -856,6 +1010,8 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
 
     }
 
+    List<Polyline> dragPolylines = new ArrayList<>();
+
     private void setUpMap() {
         MyLocationStyle myLocationStyle = new MyLocationStyle();
         myLocationStyle.myLocationIcon(BitmapDescriptorFactory
@@ -878,21 +1034,52 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
         aMap.setOnMarkerDragListener(new AMap.OnMarkerDragListener() {
             @Override
             public void onMarkerDragStart(Marker marker) {//长按拖动开始
+                int s = Integer.parseInt(marker.getSnippet());
+                Vibrator vibrator = (Vibrator) getSystemService(MainActivity.VIBRATOR_SERVICE);
+                vibrator.vibrate(200);
+                //missionFpv4Markes
+                missionFpv4Markes.set(s, marker);
 
+                Log.e("TAG", "拖动中,经纬度：" + s + "," + marker.getPosition().latitude + "," + marker.getPosition().longitude + "");
             }
 
             @Override
             public void onMarkerDrag(Marker marker) {
-                Log.e("TAG", "拖动中,经纬度：" + marker.getPosition().latitude + "," + marker.getPosition().longitude + "");
+                int s = Integer.parseInt(marker.getSnippet());
+                Log.e("TAG", "拖动中,经纬度：" + s + "," + marker.getPosition().latitude + "," + marker.getPosition().longitude + "");
+                missionFpv4Markes.set(s, marker);
+                polygons.set(s, marker.getPosition());
+                if (mPolygon != null) {
+                    mPolygon.remove();
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //区域
+                        mPolygon = drawPolygonOptions(polygons
+                                , getResources().getColor(R.color.gary)
+                                , getResources().getColor(R.color.trgary));
+                    }
+                });
             }
 
             @Override
             public void onMarkerDragEnd(Marker marker) {
-                Log.e("TAG", marker.getId() + "拖动结束,经纬度：" + marker.getPosition().latitude + "," + marker.getPosition().longitude + "");
+                int s = Integer.parseInt(marker.getSnippet());
+                Log.e("TAG", marker.getId() + "拖动结束,经纬度：" + s + "," + marker.getPosition().latitude + "," + marker.getPosition().longitude + "");
+                missionFpv4Markes.set(s, marker);
+                polygons.set(s, marker.getPosition());
+                for (int i = 0; i < missionFpv4Markes.size(); i++) {
+                    missionFpv4Markes.get(i).destroy();
+                }
+                for (int i = 0; i < polygons.size(); i++) {
+                    addRangeMarkerToMap(polygons.get(i), i);
+
+                }
+                drawWaypointOrcPicture();
             }
         });   //拖拽事件
 
-        //setPointToCenter(int x, int y);
     }
 
 
@@ -900,7 +1087,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
      * 画面
      */
     private void drawPolygon() {
-        Log.e("TAG", "drawPolygon:markerList.size:" + markerList.size() + ",mLatLngs" + polygons.size());
+        Log.e("TAG", "drawPolygon:markerList.size:" + missionFpv4Markes.size() + ",mLatLngs" + polygons.size());
         mPolygon = aMap.addPolygon(new PolygonOptions()
                 .addAll(polygons)
                 .fillColor(getResources().getColor(R.color.transparent))
@@ -1205,4 +1392,42 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
         mMapView.onDestroy();
 
     }
+
+    /**
+     * 高德坐标转GPS
+     */
+
+    public void changGaoDeToGPS() {
+
+    }
+
+    /**
+     * GPS转高德坐标
+     */
+    public void changGPSToGaoDe() {
+        String latStr = "39.989646";
+        String lngStr = "116.480864";
+        double lat = 0.0;
+        double lon = 0.0;
+        lat = Double.parseDouble(latStr);
+        lon = Double.parseDouble(lngStr);
+        LatLng sourceLatLng = new LatLng(lat, lon);
+        convert(sourceLatLng);
+    }
+
+    /**
+     * 根据类型 转换 坐标
+     * GPS转高德坐标
+     */
+    private LatLng convert(LatLng sourceLatLng) {
+        CoordinateConverter converter = new CoordinateConverter(this);
+        // CoordType.GPS 待转换坐标类型
+        converter.from(CoordinateConverter.CoordType.GPS);
+        // sourceLatLng待转换坐标点
+        converter.coord(sourceLatLng);
+        // 执行转换操作
+        LatLng desLatLng = converter.convert();
+        return desLatLng;
+    }
+
 }
