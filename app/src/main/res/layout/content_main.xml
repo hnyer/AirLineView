@@ -255,4 +255,13 @@
             android:textColor="@color/white"/>
 
     </LinearLayout>
+
+    <com.mvp.lt.airlineview.view.Mycircle2
+        android:id="@+id/mycircle"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_gravity="center"
+        android:layout_marginBottom="100dp"
+        android:layout_marginLeft="200dp"
+        />
 </FrameLayout>

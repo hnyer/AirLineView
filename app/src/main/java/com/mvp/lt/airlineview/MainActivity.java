@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -47,6 +48,7 @@ import com.amap.api.maps.model.TextOptions;
 import com.mvp.lt.airlineview.utils.RouteUtils2;
 import com.mvp.lt.airlineview.view.MaterialRangeSlider;
 import com.mvp.lt.airlineview.view.MyDoubleSeekBar;
+import com.mvp.lt.airlineview.view.Mycircle2;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import java.util.ArrayList;
@@ -95,6 +97,8 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
     LinearLayout mLlLayout;
     @BindView(R.id.revoker)
     Button mRevoker;
+    @BindView(R.id.mycircle)
+    Mycircle2 mMycircle;
 
     //定位监听
     private OnLocationChangedListener mListener = null;
@@ -206,6 +210,25 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
                 // TODO 左右游标滑动监听事件
                 Log.e("onValuesChanged", minValue + "" + maxValue);
                 updateDoubleSeekbarFlyWayPoint(minValue, maxValue);
+            }
+        });
+
+
+        ViewTreeObserver vto = mMycircle.getViewTreeObserver();
+        vto.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                Log.e("位置", "" + mMycircle.getLeft() + ":" + mMycircle.getTop());
+                return true;
+            }
+        });
+        mMycircle.setOnDateDragChangeListener(new Mycircle2.OnDateDragChangeListener() {
+            @Override
+            public void onDateChangeDrag(int angle) {
+                Log.e("角度", "" + angle);
+                currentHeadDeg = angle;
+                mShowRotation.setText(currentHeadDeg + "");
+                updateRotation();
             }
         });
 

@@ -405,7 +405,81 @@ public class RouteUtils2 {
         return false;
     }
 
+    /**
+     * @param lat_a 纬度1 y
+     * @param lng_a 经度1 x
+     *              <p>
+     *              目标点/兴趣点
+     * @param lat_b 纬度2 y
+     * @param lng_b 经度2 x
+     * @return
+     */
+    public static double getAngle(double lat_a, double lng_a, double lat_b, double lng_b) {
+        double y = Math.sin(lng_b - lng_a) * Math.cos(lat_b);
+        double x = Math.cos(lat_a) * Math.sin(lat_b) - Math.sin(lat_a) * Math.cos(lat_b) * Math.cos(lng_b - lng_a);
+        double brng = Math.atan2(y, x);
 
+        brng = Math.toDegrees(brng);
+        if (brng < 0)
+            brng = brng + 360;
+        return brng;
 
+    }
 
+    /**
+     * 根据坐标系中的3点确定夹角的方法（注意：夹角是有正负的）
+     * 0-->180  0--> -180
+     */
+    public static float angle(Point cen, Point first, Point second) {
+        float dx1, dx2, dy1, dy2;
+
+        dx1 = first.x - cen.x;
+        dy1 = first.y - cen.y;
+        dx2 = second.x - cen.x;
+        dy2 = second.y - cen.y;
+
+        // 计算三边的平方
+        float ab2 = (second.x - first.x) * (second.x - first.x) + (second.y - first.y) * (second.y - first.y);
+        float oa2 = dx1 * dx1 + dy1 * dy1;
+        float ob2 = dx2 * dx2 + dy2 * dy2;
+
+        // 根据两向量的叉乘来判断顺逆时针
+        boolean isClockwise = ((first.x - cen.x) * (second.y - cen.y) - (first.y - cen.y) * (second.x - cen.x)) > 0;
+
+        // 根据余弦定理计算旋转角的余弦值
+        double cosDegree = (oa2 + ob2 - ab2) / (2 * Math.sqrt(oa2) * Math.sqrt(ob2));
+
+        // 异常处理，因为算出来会有误差绝对值可能会超过一，所以需要处理一下
+        if (cosDegree > 1) {
+            cosDegree = 1;
+        } else if (cosDegree < -1) {
+            cosDegree = -1;
+        }
+
+        // 计算弧度
+        double radian = Math.acos(cosDegree);
+
+        // 计算旋转过的角度，顺时针为正，逆时针为负
+        float angel = (float) (isClockwise ? Math.toDegrees(radian) : -Math.toDegrees(radian));
+        return parseHeadYaw(angel);
+    }
+
+    /**
+     * 角度转换-180~180转成0~360
+     *
+     * @param value
+     * @return
+     */
+    private static float parseHeadYaw(float value) {
+        float yaw = 0;
+        if (value < 0) {
+            yaw = -value;
+        } else if (value > 0) {
+            yaw = 360 - value;
+        } else {
+            yaw = value;
+        }
+
+        return yaw;
+    }
 }
