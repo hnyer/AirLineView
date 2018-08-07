@@ -46,7 +46,6 @@ public class RouteUtils2 {
         latLngSparseArray.add(new LatLng(latsMax, lngsMax));      //2东北
         latLngSparseArray.add(new LatLng(latsMin, lngsMax));      //3东南
         latLngSparseArray.add(new LatLng(latsMin, lngsMin));      //4西南
-
         return latLngSparseArray;
     }
 
@@ -361,33 +360,14 @@ public class RouteUtils2 {
 
     }
 
-    public static boolean onSegment(Point p, Point q, Point r) {
-        if (q.x <= Math.max(p.x, r.x)
-                && q.x >= Math.min(p.x, r.x)
-                && q.y <= Math.max(p.y, r.y)
-                && q.y >= Math.min(p.y, r.y))
-            return true;
-        return false;
-    }
+
 
     public static boolean orientations(Point p, Point q, Point c) {
         int val = (q.y - p.y) * (c.x - q.x) - (q.x - p.x) * (c.y - q.y);
         if (val == 0) return true;  // colinear
         return false;
     }
-
-    /**
-     * @param p
-     * @param q
-     * @param r
-     * @return 0 --> p, q and r are colinear, 1 --> 顺时针方向, 2 --> 逆时钟方向
-     */
-    public static int orientation(Point p, Point q, Point r) {
-        int val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
-        if (val == 0) return 0;  // colinear
-        return (val > 0) ? 1 : 2; // clock or counterclock wise
-    }
-
+    //计算交点
     public static boolean doIntersect(Point p1, Point q1, Point p2, Point q2) {
         int o1 = orientation(p1, q1, p2);
         int o2 = orientation(p1, q1, q2);
@@ -402,6 +382,27 @@ public class RouteUtils2 {
         if (o3 == 0 && onSegment(p2, p1, q2)) return true;
         // p2, q2 and q1 are colinear and q1 lies on segment p2q2
         if (o4 == 0 && onSegment(p2, q1, q2)) return true;
+        return false;
+    }
+    /**
+     * @param p
+     * @param q
+     * @param r
+     * @return 0 --> p, q and r are colinear, 1 --> 顺时针方向, 2 --> 逆时钟方向
+     */
+    public static int orientation(Point p, Point q, Point r) {
+        int val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+        if (val == 0) return 0;  // colinear
+        return (val > 0) ? 1 : 2; // clock or counterclock wise
+    }
+
+
+    public static boolean onSegment(Point p, Point q, Point r) {
+        if (q.x <= Math.max(p.x, r.x)
+                && q.x >= Math.min(p.x, r.x)
+                && q.y <= Math.max(p.y, r.y)
+                && q.y >= Math.min(p.y, r.y))
+            return true;
         return false;
     }
 

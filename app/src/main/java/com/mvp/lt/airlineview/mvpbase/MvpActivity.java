@@ -1,8 +1,8 @@
 package com.mvp.lt.airlineview.mvpbase;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 
 /**
  * $activityName
@@ -27,7 +27,7 @@ import android.support.annotation.Nullable;
 
 //第一重代理->目标对象->实现目标接口(MvpCallback)---->Activity抽象类
 //第二重代理->代理对象->MvpActivity
-public abstract class MvpActivity<V extends MvpView, P extends MvpPresenter<V>> extends Activity implements MvpCallback<V, P> {
+public abstract class MvpActivity<V extends MvpView, P extends MvpPresenter<V>> extends AppCompatActivity implements MvpCallback<V, P> {
 
     private P presneter;
     private V view;

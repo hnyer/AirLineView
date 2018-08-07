@@ -225,7 +225,7 @@
             android:layout_height="25dp"
             android:layout_gravity="center"
             android:layout_weight="1"
-            android:max="360"
+            android:max="45"
             />
 
         <TextView

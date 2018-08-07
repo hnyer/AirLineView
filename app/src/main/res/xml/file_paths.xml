@@ -5,22 +5,22 @@
         path=""/>
     <files-path
         name="files"
-        path=""/>
+        path="1"/>
 
     <cache-path
         name="cache"
-        path=""/>
+        path="2"/>
 
     <external-path
         name="external"
-        path=""/>
+        path="3"/>
 
     <external-files-path
         name="external_file_path"
-        path=""/>
+        path="4"/>
 
     <external-cache-path
         name="external_cache_path"
-        path=""/>
+        path="5"/>
 
 </paths>

@@ -2,8 +2,7 @@ package com.mvp.lt.airlineview.basemvp;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-
-import com.mvp.lt.djip4r.base.BaseActivity;
+import android.support.v7.app.AppCompatActivity;
 
 
 /**
@@ -12,7 +11,7 @@ import com.mvp.lt.djip4r.base.BaseActivity;
  * @author ${LiuTao}
  * @date 2017/11/1/001
  */
-public abstract class BaseMvpActivity<P extends MvpBasePresenter<V>, V extends IView> extends BaseActivity {
+public abstract class BaseMvpActivity<P extends MvpBasePresenter<V>, V extends IView> extends AppCompatActivity {
     private P presenter;
     private V view;
 
