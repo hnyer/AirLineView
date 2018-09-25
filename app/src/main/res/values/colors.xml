@@ -15,4 +15,9 @@
     <color name="blue">#00ffff</color>
     <color name="hangXian">#ffee00</color>
 
+
+    <color name="color_gray">#f0f0f4</color>
+    <color name="color_bule">#77cff7</color>
+    <color name="color_green">#118c23</color>
+    <color name="color_orange">#f3705b</color>
 </resources>

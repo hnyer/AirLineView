@@ -1,0 +1,54 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical" >
+    <!--     android:background="@drawable/bg" -->
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <com.mvp.lt.airlineview.view.CircleMenuLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/turnplate_bg_right" >
+            <RelativeLayout
+                android:id="@id/id_circle_menu_item_center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" >
+                <ImageView
+                    android:layout_width="104.0dip"
+                    android:layout_height="104.0dip"
+                    android:background="@drawable/turnplate_center_unlogin" />
+
+            </RelativeLayout>
+        </com.mvp.lt.airlineview.view.CircleMenuLayout>
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/turnplate_bg_left"
+        android:orientation="vertical" >
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="添加描述"
+            android:textColor="#ffffff"
+            android:textSize="20dp" />
+
+        <!-- 			android:textAlignment="textStart" -->
+        <TextView
+            android:layout_width="fill_parent"
+            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="添加描述详情"
+            android:textColor="#ffffff"
+            android:textSize="13.5dip" />
+    </LinearLayout>
+
+</LinearLayout>

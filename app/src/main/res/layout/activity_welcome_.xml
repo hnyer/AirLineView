@@ -26,101 +26,103 @@
 
             <Button
                 android:id="@+id/btn_1"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="正射图"/>
 
             <Button
                 android:id="@+id/btn_2"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="视频播放"/>
+
+            <Button
+                android:id="@+id/btn_3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="圆形菜单"/>
+
+            <Button
+                android:id="@+id/btn_4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="旋转控制"/>
+
+            <Button
+                android:id="@+id/btn_5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="地图操作"/>
+
+            <Button
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Kml文件解析"/>
+
+            <Button
+
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="视频播放"/>
 
             <Button
 
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="视频播放"/>
 
             <Button
 
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="视频播放"/>
 
             <Button
 
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="视频播放"/>
 
             <Button
 
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="视频播放"/>
 
             <Button
 
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="视频播放"/>
-            <Button
-
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="视频播放"/>
 
             <Button
 
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="视频播放"/>
 
             <Button
 
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="视频播放"/>
 
             <Button
 
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="视频播放"/>
 
             <Button
 
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="视频播放"/>
-            <Button
-
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="视频播放"/>
 
             <Button
 
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="视频播放"/>
-
-            <Button
-
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="视频播放"/>
-
-            <Button
-
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="视频播放"/>
-
-            <Button
-
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="视频播放"/>
 

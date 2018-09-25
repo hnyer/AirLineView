@@ -1,0 +1,111 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:background="@color/white"
+             android:gravity="end"
+             android:orientation="horizontal">
+
+    <EditText
+        android:id="@+id/input_value"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:background="@color/white"
+        android:inputType="number"
+        android:text="90"
+        android:textColor="@color/black"/>
+
+    <TextView
+
+        android:id="@+id/input_value_ok"
+        android:layout_width="100dp"
+        android:layout_height="45dp"
+        android:layout_gravity="end"
+        android:background="@color/gary"
+        android:gravity="center"
+        android:text="确定"
+        android:textColor="@color/black"/>
+
+    <SeekBar
+        android:id="@+id/set_seekBar"
+        android:layout_width="match_parent"
+        android:layout_height="25dp"
+        android:layout_gravity="start"
+        android:layout_marginTop="60dp"
+        android:layout_weight="1"
+        android:max="360"/>
+
+    <RadioButton
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_gravity="end"
+        android:layout_marginTop="50dp"
+        android:button="@null"
+        android:gravity="center"
+        android:text="中"
+        android:textColor="@color/white"/>
+
+    <RadioGroup
+        android:id="@+id/radio_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="110dp">
+
+        <RadioButton
+            android:id="@+id/radio_button1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:shadowColor="@color/black"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="5"
+            android:text="能滑动"
+            android:textColor="@color/white"/>
+
+        <RadioButton
+            android:id="@+id/radio_button2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:shadowColor="@color/black"
+            android:shadowDx="2"
+            android:shadowDy="2"
+            android:shadowRadius="5"
+            android:text="不能滑动"
+            android:textColor="@color/white"/>
+
+    </RadioGroup>
+
+
+    <com.mvp.lt.airlineview.view.CircleMenuLayout2
+        android:id="@+id/id_menulayout"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/circle_bg3">
+
+        <RelativeLayout
+            android:id="@id/id_circle_menu_item_center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/id_circle_menu_item_center_img"
+                android:layout_width="45dip"
+                android:layout_height="45dip"
+                android:layout_centerInParent="true"
+                android:background="@drawable/ic_center_menu_on"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:text="100%"
+                android:textColor="@color/colorAccent"
+                android:textSize="7sp"
+                />
+        </RelativeLayout>
+
+    </com.mvp.lt.airlineview.view.CircleMenuLayout2>
+
+</FrameLayout>
