@@ -88,6 +88,8 @@
         <activity
             android:name=".CircleActivity"
             android:screenOrientation="sensorLandscape"/>
+        <activity
+            android:name="cn.yznu.gdmapoperate.ui.activity.CustViewActivity"/>
 
         <provider
             android:name="android.support.v4.content.FileProvider"
@@ -124,7 +126,16 @@
 
         <activity android:name="cn.yznu.gdmapoperate.ui.activity.TestActivity" />
         <activity android:name="cn.yznu.gdmapoperate.ui.activity.ViewPagerActivity" />
+
+
+
         <activity android:name="cn.yznu.gdmapoperate.ui.activity.RecyclerviewCardGalleryActivity" />
+
+
+
+
     </application>
+
+
 
 </manifest>

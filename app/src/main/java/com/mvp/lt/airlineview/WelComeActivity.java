@@ -12,6 +12,7 @@ import com.mvp.lt.airlineview.playMedia.PlayMediaActivity;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import cn.yznu.gdmapoperate.ui.activity.CustViewActivity;
 import cn.yznu.gdmapoperate.ui.activity.MapMainActivity;
 
 /**
@@ -34,6 +35,7 @@ public class WelComeActivity extends AppCompatActivity {
     @BindView(R.id.btn_5)
     Button mBtn5;
 
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,7 +43,7 @@ public class WelComeActivity extends AppCompatActivity {
         ButterKnife.bind(this);
     }
 
-    @OnClick({R.id.btn_1, R.id.btn_2, R.id.btn_3, R.id.btn_4, R.id.btn_5})
+    @OnClick({R.id.btn_1, R.id.btn_2, R.id.btn_3, R.id.btn_4, R.id.btn_5,R.id.btn_6})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn_1:
@@ -59,6 +61,9 @@ public class WelComeActivity extends AppCompatActivity {
                 break;
             case R.id.btn_5:
                 startActivity(new Intent(WelComeActivity.this, MapMainActivity.class));
+                break;
+            case R.id.btn_6:
+                startActivity(new Intent(WelComeActivity.this, CustViewActivity.class));
                 break;
         }
     }
