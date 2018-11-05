@@ -3,8 +3,8 @@ package com.mvp.lt.airlineview.utils;
 import android.graphics.Point;
 import android.util.Log;
 
-import com.mvp.lt.airlineview.DivLinePoint;
-import com.mvp.lt.airlineview.LineGroup;
+import com.mvp.lt.airlineview.bean.DivLinePoint;
+import com.mvp.lt.airlineview.bean.LineGroup;
 
 import java.util.ArrayList;
 import java.util.List;

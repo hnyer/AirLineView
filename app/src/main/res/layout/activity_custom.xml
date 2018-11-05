@@ -25,5 +25,9 @@
             android:layout_height="45dp"
             android:gravity="center"/>
 
+
+        <com.mvp.lt.airlineview.view.AcrView
+            android:layout_width="match_parent"
+            android:layout_height="200dp"/>
     </LinearLayout>
 </com.mvp.lt.airlineview.view.PullScrollView>

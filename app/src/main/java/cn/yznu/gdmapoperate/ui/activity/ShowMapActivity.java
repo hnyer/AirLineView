@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -54,11 +55,11 @@ public class ShowMapActivity extends AppCompatActivity implements View.OnClickLi
         setMapCustomStyleFile(this);
         Button basicmap = (Button) findViewById(R.id.basicmap);
         basicmap.setOnClickListener(this);
-        Button rsmap = (Button)findViewById(R.id.rsmap);
+        Button rsmap = (Button) findViewById(R.id.rsmap);
         rsmap.setOnClickListener(this);
-        Button nightmap = (Button)findViewById(R.id.nightmap);
+        Button nightmap = (Button) findViewById(R.id.nightmap);
         nightmap.setOnClickListener(this);
-        Button navimap = (Button)findViewById(R.id.navimap);
+        Button navimap = (Button) findViewById(R.id.navimap);
         navimap.setOnClickListener(this);
 
         mStyleCheckbox = (CheckBox) findViewById(R.id.check_style);
@@ -84,6 +85,7 @@ public class ShowMapActivity extends AppCompatActivity implements View.OnClickLi
 
             filePath = context.getFilesDir().getAbsolutePath();
             File file = new File(filePath + "/" + styleName);
+            Log.e("自定义地图", file.getPath());
             if (file.exists()) {
                 file.delete();
             }
@@ -167,6 +169,5 @@ public class ShowMapActivity extends AppCompatActivity implements View.OnClickLi
         }
 
         mStyleCheckbox.setChecked(false);
-
     }
 }

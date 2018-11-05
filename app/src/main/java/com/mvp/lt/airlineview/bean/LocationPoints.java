@@ -1,4 +1,4 @@
-package com.mvp.lt.airlineview;
+package com.mvp.lt.airlineview.bean;
 
 /**
  * $name

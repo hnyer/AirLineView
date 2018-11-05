@@ -7,7 +7,7 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.mvp.lt.airlineview.DragScaleView;
+import com.mvp.lt.airlineview.view.DragScaleView;
 import com.mvp.lt.airlineview.R;
 
 /**

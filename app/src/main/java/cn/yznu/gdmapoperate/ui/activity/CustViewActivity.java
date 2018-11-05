@@ -33,6 +33,9 @@ public class CustViewActivity extends AppCompatActivity {
         setContentView(R.layout.activity_custom);
         ButterKnife.bind(this);
         Log.e("", "=----------onCreate-----------");
+        int with = mGenderView.getMeasuredWidth();
+        int height = mGenderView.getMeasuredHeight();
+        Log.e("oncreat", "with:" + with + ",height:" + height);
         mGenderView.setSetOnSelectedListener(new GenderSwitchView.setOnSelectedListener() {
             @Override
             public void onSelectedOne() {
@@ -46,6 +49,30 @@ public class CustViewActivity extends AppCompatActivity {
                 Log.e("", "男士");
                 ToastUtils.showToast("男士");
                 showText.setText("男士");
+            }
+        });
+    }
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            int with = mGenderView.getMeasuredWidth();
+            int height = mGenderView.getMeasuredHeight();
+            Log.e("onWindowFocusChanged", "with:" + with + ",height:" + height);
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        //把消息post到队列最后
+        mGenderView.post(new Runnable() {
+            @Override
+            public void run() {
+                int with = mGenderView.getMeasuredWidth();
+                int height = mGenderView.getMeasuredHeight();
+                Log.e("onStart", "with:" + with + ",height:" + height);
             }
         });
     }

@@ -41,7 +41,12 @@ public class MapMainActivity extends AppCompatActivity {
     private View positionView;
     private ViewPager viewPager;
     private List<CommonFragment> fragments = new ArrayList<>(); // 供ViewPager使用
-    private Class[] clazz = new Class[]{ShowMapActivity.class, LocationActivity.class, ElectricFenceActivity.class,SearchActivity.class, TestActivity.class};
+    private Class[] clazz = new Class[]{
+            ShowMapActivity.class,
+            LocationActivity.class,
+            ElectricFenceActivity.class,
+            SearchActivity.class,
+            TestActivity.class};
     private int[] icons = new int[]{R.drawable.map, R.drawable.dingwei, R.drawable.weilan, R.drawable.daohang, R.drawable.ic_search, R.drawable.dingwei};
     private List<DemoModel> mList = new ArrayList<>();
     private ImageView imgLike;

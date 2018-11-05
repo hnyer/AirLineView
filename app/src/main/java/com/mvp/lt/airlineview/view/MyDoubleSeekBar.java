@@ -13,7 +13,6 @@ import android.os.Parcelable;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
-
 import com.mvp.lt.airlineview.R;
 import com.mvp.lt.airlineview.utils.DensityUtils;
 

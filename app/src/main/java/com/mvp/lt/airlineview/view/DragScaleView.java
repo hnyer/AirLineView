@@ -1,4 +1,4 @@
-package com.mvp.lt.airlineview;
+package com.mvp.lt.airlineview.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -11,6 +11,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.mvp.lt.airlineview.bean.LineGroup;
+import com.mvp.lt.airlineview.bean.DivLinePoint;
 import com.mvp.lt.airlineview.utils.RouteUtlis;
 
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package com.mvp.lt.airlineview;
+package com.mvp.lt.airlineview.bean;
 
 
 import com.amap.api.maps.model.LatLng;

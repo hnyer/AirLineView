@@ -3,13 +3,7 @@ package com.mvp.lt.airlineview;
 import android.app.Application;
 import android.content.Context;
 
-/**
- * 作者：uiho_mac
- * 时间：2018/3/1
- * 描述：application
- * 版本：1.0
- * 修订历史：
- */
+
 
 public class App extends Application {
     private static App instance;

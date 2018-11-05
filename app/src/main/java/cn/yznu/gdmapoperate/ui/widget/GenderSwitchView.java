@@ -143,6 +143,7 @@ public class GenderSwitchView extends View {
         float[] innerRadii = {0, 0, 0, 0, 0, 0, 0, 0};//内矩形 圆角半径
         RoundRectShape roundRectShape = new RoundRectShape(outerRadii, inset, innerRadii);
         backgroundDrawable = new ShapeDrawable(roundRectShape);
+
         int back_color = Color.parseColor("#f3f3f3");
         backgroundDrawable.getPaint().setColor(back_color);
         backgroundDrawable.setBounds(0, 0, width, height);

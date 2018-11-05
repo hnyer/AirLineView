@@ -1,4 +1,4 @@
-package com.mvp.lt.airlineview;
+package com.mvp.lt.airlineview.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 
+import com.mvp.lt.airlineview.R;
 import com.mvp.lt.airlineview.playMedia.PlayMediaActivity;
 
 import butterknife.BindView;
@@ -14,6 +15,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import cn.yznu.gdmapoperate.ui.activity.CustViewActivity;
 import cn.yznu.gdmapoperate.ui.activity.MapMainActivity;
+
 
 /**
  * $activityName
@@ -34,6 +36,8 @@ public class WelComeActivity extends AppCompatActivity {
     Button mBtn4;
     @BindView(R.id.btn_5)
     Button mBtn5;
+    @BindView(R.id.custom_knife)
+    Button customKnife;
 
 
     @Override
@@ -43,7 +47,7 @@ public class WelComeActivity extends AppCompatActivity {
         ButterKnife.bind(this);
     }
 
-    @OnClick({R.id.btn_1, R.id.btn_2, R.id.btn_3, R.id.btn_4, R.id.btn_5,R.id.btn_6})
+    @OnClick({R.id.btn_1, R.id.btn_2, R.id.btn_3, R.id.btn_4, R.id.btn_5,R.id.btn_6,R.id.custom_knife})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn_1:
@@ -64,6 +68,9 @@ public class WelComeActivity extends AppCompatActivity {
                 break;
             case R.id.btn_6:
                 startActivity(new Intent(WelComeActivity.this, CustViewActivity.class));
+                break;
+                case R.id.custom_knife:
+                startActivity(new Intent(WelComeActivity.this, TextCustomKnifeActivity.class));
                 break;
         }
     }

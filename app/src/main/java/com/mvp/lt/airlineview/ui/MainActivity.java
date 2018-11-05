@@ -1,6 +1,7 @@
-package com.mvp.lt.airlineview;
+package com.mvp.lt.airlineview.ui;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Point;
@@ -45,18 +46,29 @@ import com.amap.api.maps.model.Polyline;
 import com.amap.api.maps.model.PolylineOptions;
 import com.amap.api.maps.model.Text;
 import com.amap.api.maps.model.TextOptions;
+import com.mvp.lt.airlineview.R;
+import com.mvp.lt.airlineview.annotation.CustumUtils;
+import com.mvp.lt.airlineview.annotation.Person;
+import com.mvp.lt.airlineview.bean.Coordinate;
+import com.mvp.lt.airlineview.utils.ReadKml;
 import com.mvp.lt.airlineview.utils.RouteUtils2;
+import com.mvp.lt.airlineview.utils.SoilSampleUtil;
 import com.mvp.lt.airlineview.view.MaterialRangeSlider;
 import com.mvp.lt.airlineview.view.MyDoubleSeekBar;
 import com.mvp.lt.airlineview.view.Mycircle2;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
@@ -99,11 +111,13 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
     Button mRevoker;
     @BindView(R.id.mycircle)
     Mycircle2 mMycircle;
+    @BindView(R.id.kml_parse2)
+    Button mKmlParse2;
 
     //定位监听
     private OnLocationChangedListener mListener = null;
     /*地图相关*/
-    private AMap aMap;
+    public AMap aMap;
     //标识，用于判断是否只显示一次定位信息和用户重新定位
     private boolean isFirstLoc = true;
     private RxPermissions mRxPermissions;
@@ -120,12 +134,12 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
     //飞行航线点marker
     private List<Marker> wayPointsmarkerList = new ArrayList<>();
     //地图上 选点 经纬度集合
-    private List<LatLng> polygons = new ArrayList<LatLng>();
+    public List<LatLng> polygons = new ArrayList<LatLng>();
 
     private List<LatLng> rPolygons;
 
     //多边形
-    private Polygon mPolygon = null;
+    public Polygon mPolygon = null;
     public Polyline mPolyline;
     private Polyline mHangXianPolyline1;
     private Polyline mHangXianPolyline2;
@@ -146,14 +160,19 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
     private List<Text> mDistanceText = new ArrayList<Text>();
     private Marker mCenterMarker;
     private MyDoubleSeekBar<Integer> mDoubleSeekbar;
-    List<Integer> mIntegerList = new ArrayList<>();
-    int lastMarkerLatlngId = 0;
+    private List<Integer> mIntegerList = new ArrayList<>();
+    private int lastMarkerLatlngId = 0;
+    private Coordinate coordinate;
+    private boolean addSampleSuccess = false;
+    private static List<Coordinate> coordinateList = new ArrayList();//存储每次实例化的Coordinate对象，每个Coordinate都保存着不同的x,y,name
+    private ReadKml mReadKml;
 
     //清除
     private void clearLine() {
         for (int i = 0; i < mDistanceText.size(); i++) {
             mDistanceText.get(i).destroy();
         }
+
         mDistanceText.clear();
         if (mPolygon != null) {
             mPolygon.remove();
@@ -203,6 +222,38 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+        initView(savedInstanceState);
+        mReadKml = new ReadKml(this);
+        //自定义注解
+        try {
+            CustumUtils.getPersonInfo(Person.class);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @OnClick({R.id.kml_parse, R.id.kml_parse2})
+    public void onViewClicked(View view) {
+        switch (view.getId()) {
+            case R.id.kml_parse:
+
+                mReadKml.parseKml(this, "kml演示.kml");//调用ReadKML类中的解析方法
+                // readKml.parseKmlFile();//调用ReadKML类中的解析方法
+                break;
+            case R.id.kml_parse2:
+                break;
+        }
+    }
+
+    public void addSampleMarker() {
+        if (ReadKml.addSampleSuccess) {
+            SoilSampleUtil.addSampleMarkersData(aMap, mReadKml);
+        } else {
+            Log.d("MainActivity", "addSampleSuccess is false or aMap is null");
+        }
+    }
+
+    private void initView(Bundle savedInstanceState) {
         mDoubleSeekbar = new MyDoubleSeekBar<Integer>(0, 100, this);
         mDoubleSeekbar.setOnRangeSeekBarChangeListener(new MyDoubleSeekBar.OnRangeSeekBarChangeListener<Integer>() {
             @Override
@@ -214,6 +265,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
         });
 
 
+        mLlLayout.addView(mDoubleSeekbar);
         ViewTreeObserver vto = mMycircle.getViewTreeObserver();
         vto.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
             @Override
@@ -232,7 +284,6 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
             }
         });
 
-        mLlLayout.addView(mDoubleSeekbar);
         mPriceSlider.setRangeSliderListener(MainActivity.this);
         mClear.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -282,6 +333,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
             }
         });
     }
+
 
     public void revokerOrcPoints() {
         if (mIntegerList.size() > 0) {
@@ -541,7 +593,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
         drawWaypointOrcPicture();
     }
 
-    private void drawWaypointOrcPicture() {
+    public void drawWaypointOrcPicture() {
 
         for (int i = 0; i < wayPointsmarkerList.size(); i++) {
             wayPointsmarkerList.get(i).destroy();
@@ -612,7 +664,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
      *  旋转航线
      * @param polygons
      */
-    private void drawOricFlyLines(List<LatLng> polygons) {
+    public void drawOricFlyLines(List<LatLng> polygons) {
         if (polygons.size() < 3) {
             if (mHangXianPolyline1 != null) {
                 mHangXianPolyline1.remove();
@@ -891,7 +943,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
     }
 
 
-    private Polygon drawPolygonOptions(List<LatLng> linelatLngs, int color, int color2) {
+    public Polygon drawPolygonOptions(List<LatLng> linelatLngs, int color, int color2) {
         PolygonOptions polygonOptions = new PolygonOptions();
         polygonOptions.addAll(linelatLngs);
         polygonOptions.strokeWidth(5) // 多边形的边框
@@ -964,6 +1016,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
 
     }
 
+
     //航线点
     public void addCrossMarkerToMap(List<LatLng> listPolylines, LatLng LatLng, int i) {
         View view;
@@ -999,8 +1052,10 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
             mUiSettings = aMap.getUiSettings();
             aMap.setOnMapClickListener(MainActivity.this);
         }
+        setMapCustomStyleFile(this);
         mRxPermissions = new RxPermissions(this);
-        mRxPermissions.request(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        mRxPermissions.request(Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .subscribe(new Observer<Boolean>() {
                     @Override
                     public void onSubscribe(Disposable d) {
@@ -1041,7 +1096,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
         myLocationStyle.radiusFillColor(getResources().getColor(R.color.location));// 设置圆形的填充颜色
         // myLocationStyle.anchor(int,int)//设置小蓝点的锚点
         myLocationStyle.strokeWidth(1.0f);// 设置圆形的边框粗细
-        aMap.moveCamera(CameraUpdateFactory.zoomTo(19));
+        aMap.moveCamera(CameraUpdateFactory.zoomTo(17));
         aMap.setMyLocationStyle(myLocationStyle);
         aMap.setLocationSource(this);// 设置定位资源。如果不设置此定位资源则定位按钮不可点击。并且实现activate激活定位,停止定位的回调方法
         aMap.getUiSettings().setMyLocationButtonEnabled(true);// 设置默认定位按钮是否显示
@@ -1052,6 +1107,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
         aMap.setMyLocationType(AMap.LOCATION_TYPE_LOCATE);
         aMap.setOnMarkerClickListener(this); //点击事件
         aMap.setInfoWindowAdapter(this);
+        aMap.setMapCustomEnable(true);
         aMap.setOnMarkerDragListener(new AMap.OnMarkerDragListener() {
             @Override
             public void onMarkerDragStart(Marker marker) {//长按拖动开始
@@ -1100,6 +1156,48 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
                 drawWaypointOrcPicture();
             }
         });   //拖拽事件
+
+    }
+
+    private void setMapCustomStyleFile(Context context) {
+        String styleName = "style.data";
+        FileOutputStream outputStream = null;
+        InputStream inputStream = null;
+        String filePath = null;
+        try {
+            inputStream = context.getAssets().open(styleName);
+            byte[] b = new byte[inputStream.available()];
+            inputStream.read(b);
+
+            filePath = context.getFilesDir().getAbsolutePath();
+            File file = new File(filePath + "/" + styleName);
+            Log.e("自定义地图", file.getPath());
+            if (file.exists()) {
+                file.delete();
+            }
+            file.createNewFile();
+            outputStream = new FileOutputStream(file);
+            outputStream.write(b);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (inputStream != null)
+                    inputStream.close();
+
+                if (outputStream != null)
+                    outputStream.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        aMap.setCustomMapStylePath(filePath + "/" + styleName);
+        aMap.showBuildings(true);
+        aMap.showIndoorMap(true);
+        aMap.showMapText(true);
 
     }
 
@@ -1440,7 +1538,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
      * 根据类型 转换 坐标
      * GPS转高德坐标
      */
-    private LatLng convert(LatLng sourceLatLng) {
+    public LatLng convert(LatLng sourceLatLng) {
         CoordinateConverter converter = new CoordinateConverter(this);
         // CoordType.GPS 待转换坐标类型
         converter.from(CoordinateConverter.CoordType.GPS);

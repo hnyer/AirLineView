@@ -1,7 +1,9 @@
-package com.mvp.lt.airlineview;
+package com.mvp.lt.airlineview.ui;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+
+import com.mvp.lt.airlineview.R;
 
 /**
  * $activityName

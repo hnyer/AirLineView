@@ -1,10 +1,11 @@
-package com.mvp.lt.airlineview;
+package com.mvp.lt.airlineview.ui;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import com.mvp.lt.airlineview.R;
 import com.mvp.lt.airlineview.view.CircleMenuLayout;
 
 /**

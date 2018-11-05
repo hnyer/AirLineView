@@ -54,11 +54,7 @@
                 android:layout_height="wrap_content"
                 android:text="地图操作"/>
 
-            <Button
 
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Kml文件解析"/>
 
             <Button
                  android:id="@+id/btn_6"
@@ -67,10 +63,10 @@
                 android:text="自定义View"/>
 
             <Button
-
+                 android:id="@+id/custom_knife"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="视频播放"/>
+                android:text="自定义注解ButtonKnife"/>
 
             <Button
 

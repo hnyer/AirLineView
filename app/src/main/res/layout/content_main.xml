@@ -16,19 +16,24 @@
 
     <TextView
         android:id="@+id/fly_progress"
-        android:layout_width="wrap_content"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
         android:layout_marginLeft="20dp"
+        android:gravity="center"
         android:text="飞行进度调节："
         />
+
 
     <LinearLayout
         android:id="@+id/llLayout"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
         android:gravity="center"
+        android:layout_marginTop="20dp"
         android:orientation="vertical"
-        android:padding="10dp">
+        >
     </LinearLayout>
 
     <com.mvp.lt.airlineview.view.MaterialRangeSlider
@@ -62,7 +67,6 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
         android:orientation="vertical">
 
         <Button
@@ -79,7 +83,7 @@
             android:id="@+id/clear"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="2dp"
             android:background="#22000000"
             android:gravity="center"
             android:onClick="confirm"
@@ -89,12 +93,30 @@
             android:id="@+id/revoker"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="2dp"
             android:background="#22000000"
             android:gravity="center"
             android:onClick="confirm"
             android:text="撤销"/>
 
+        <Button
+            android:id="@+id/kml_parse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:background="#22000000"
+            android:gravity="center"
+            android:onClick="confirm"
+            android:text="KML文件单个"/>
+        <Button
+            android:id="@+id/kml_parse2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:background="#22000000"
+            android:gravity="center"
+            android:onClick="confirm"
+            android:text="KML文件多个"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -112,7 +134,7 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
+        android:layout_gravity="bottom|end"
         android:layout_marginBottom="80dp"
         android:orientation="vertical">
 
