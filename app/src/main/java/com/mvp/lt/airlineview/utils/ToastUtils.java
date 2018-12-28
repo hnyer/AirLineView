@@ -23,9 +23,7 @@ public class ToastUtils {
         mUIHandler.post(new Runnable() {
             @Override
             public void run() {
-                if (toast == null) {
-                    toast = Toast.makeText(App.getInstance(), msg + "", Toast.LENGTH_LONG);
-                }
+                toast = Toast.makeText(App.getInstance(), msg + "", Toast.LENGTH_LONG);
                 toast.setText(msg);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();
@@ -37,9 +35,7 @@ public class ToastUtils {
         mUIHandler.post(new Runnable() {
             @Override
             public void run() {
-                if (toast == null) {
-                    toast = Toast.makeText(App.getInstance(), resId, Toast.LENGTH_LONG);
-                }
+                toast = Toast.makeText(App.getInstance(), resId, Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.setText(resId);
                 toast.show();
@@ -69,6 +65,7 @@ public class ToastUtils {
             }
         });
     }
+
     /**
      * Toast 替代方法 ：立即显示无需等待
      */

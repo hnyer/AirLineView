@@ -1,0 +1,87 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:gravity="center"
+              android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/location_tip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="点击屏幕设置位置"
+            android:textSize="20dp"/>
+
+        <Button
+            android:id="@+id/location_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="设置位置"
+            android:textSize="20dp"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tiptxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="提示信息"
+        android:textSize="20dp"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="刷新间隔(毫秒)"
+            android:textSize="20dp"
+            >
+        </TextView>
+
+        <EditText
+            android:id="@+id/txt_canshu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="请输入时间间隔"
+            android:numeric="integer"
+            android:text="1000"
+            android:textSize="20dp"/>
+
+        <Button
+            android:id="@+id/txt_setting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="设置"/>
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="开始模拟点击屏幕"/>
+
+    <Button
+        android:id="@+id/shootScreen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="截图"/>
+
+    <Button
+        android:id="@+id/end"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="停止点击"/>
+
+    <Button
+        android:id="@+id/scrollview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="滚动试图"/>
+</LinearLayout>

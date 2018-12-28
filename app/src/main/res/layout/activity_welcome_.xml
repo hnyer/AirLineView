@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -69,22 +68,22 @@
                 android:text="自定义注解ButtonKnife"/>
 
             <Button
+                android:id="@+id/simulation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="模拟点击屏幕"/>
 
+            <Button
+               android:id="@+id/ce_test"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="视频播放"/>
 
             <Button
-
+                android:id="@+id/btn_7"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="视频播放"/>
-
-            <Button
-
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="视频播放"/>
+                android:text="OPENGLES"/>
 
             <Button
 

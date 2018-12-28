@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="80dp"
+              android:layout_height="wrap_content"
+              android:background="@color/gary"
+              android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/bottun_1"
+        android:layout_width="40dp"
+        android:layout_height="25dp"
+        android:background="@color/blue"
+        android:gravity="start"
+        android:src="@mipmap/ic_launcher_round"
+        android:text="开始"
+        android:textColor="@color/white"/>
+
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="1dp"
+        android:background="@color/white"/>
+
+    <TextView
+        android:id="@+id/bottun_2"
+        android:layout_width="40dp"
+        android:layout_height="25dp"
+        android:layout_gravity="start"
+        android:background="@color/blue"
+        android:src="@mipmap/ic_launcher_round"
+        android:text="暂停"
+        android:textColor="@color/white"/>
+</LinearLayout>

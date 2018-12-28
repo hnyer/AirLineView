@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.mvp.lt.airlineview">
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.mvp.lt.airlineview"
+    >
     //地图SDK（包含其搜索功能）需要的基础权限
     <!--用于进行网络定位-->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
@@ -41,6 +43,15 @@
     <uses-permission android:name="android.permission.LOCATION"/>
     <!-- 许可调用相机自动对焦 -->
     <uses-feature android:name="android.hardware.camera.autofocus"/>
+    <uses-permission android:name="android.permission.READ_FRAME_BUFFER"/>
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.Internet"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission
+        android:name="android.permission.INJECT_EVENTS"
+        tools:ignore="ProtectedPermissions"/>
+
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -57,7 +68,16 @@
         <service android:name="com.amap.api.location.APSService">
 
         </service>
-
+        <!--android:authorities="${applicationId}.fileprovider"-->
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.mvp.lt.airlineview.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths"/>
+        </provider>
         <activity
             android:name=".ui.WelComeActivity"
             android:label="@string/app_name"
@@ -89,21 +109,34 @@
         <activity
             android:name=".ui.ActivityCleCliMenu"
             android:screenOrientation="sensorLandscape">
-
         </activity>
-        <activity android:name="cn.yznu.gdmapoperate.ui.activity.CustViewActivity">
-
+        <activity
+            android:name=".RenderGlActivity">
         </activity>
 
-        <provider
-            android:name="android.support.v4.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
+        <activity android:name="cn.yznu.gdmapoperate.ui.activity.CustViewActivity"/>
+
+        <activity
+            android:name="com.example.clickservice.MainActivity">
+        </activity>
+
+        <service
+            android:name="com.example.clickservice.BackGroundService"
             android:exported="false"
-            android:grantUriPermissions="true">
+            android:label="自动点击Demo"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService"/>
+            </intent-filter>
             <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths"/>
-        </provider>
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessible_service_config"/>
+        </service>
+
+        <activity android:name="com.example.clickservice.myScrollView">
+
+        </activity>
+
 
         <activity
             android:name="cn.yznu.gdmapoperate.ui.activity.ElectricFenceActivity"

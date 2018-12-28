@@ -50,9 +50,9 @@ import com.mvp.lt.airlineview.R;
 import com.mvp.lt.airlineview.annotation.CustumUtils;
 import com.mvp.lt.airlineview.annotation.Person;
 import com.mvp.lt.airlineview.bean.Coordinate;
+import com.mvp.lt.airlineview.kml.bean.KMLFileElementBean;
 import com.mvp.lt.airlineview.utils.ReadKml;
 import com.mvp.lt.airlineview.utils.RouteUtils2;
-import com.mvp.lt.airlineview.utils.SoilSampleUtil;
 import com.mvp.lt.airlineview.view.MaterialRangeSlider;
 import com.mvp.lt.airlineview.view.MyDoubleSeekBar;
 import com.mvp.lt.airlineview.view.Mycircle2;
@@ -230,6 +230,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
+
     }
 
     @OnClick({R.id.kml_parse, R.id.kml_parse2})
@@ -237,7 +238,18 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
         switch (view.getId()) {
             case R.id.kml_parse:
 
-                mReadKml.parseKml(this, "kml演示.kml");//调用ReadKML类中的解析方法
+               // mReadKml.parseKml(this, "A区01.kml");//调用ReadKML类中的解析方法
+                mReadKml.parseKmzFileWithDom4j("yueluqu.kml", new ReadKml.KmlHelperListener() {
+                    @Override
+                    public void onSuccessPoint(List<KMLFileElementBean> fileElementBeans) {
+
+                    }
+
+                    @Override
+                    public void onFaid(String s) {
+
+                    }
+                });
                 // readKml.parseKmlFile();//调用ReadKML类中的解析方法
                 break;
             case R.id.kml_parse2:
@@ -245,13 +257,7 @@ public class MainActivity extends AppCompatActivity implements AMap.OnMapClickLi
         }
     }
 
-    public void addSampleMarker() {
-        if (ReadKml.addSampleSuccess) {
-            SoilSampleUtil.addSampleMarkersData(aMap, mReadKml);
-        } else {
-            Log.d("MainActivity", "addSampleSuccess is false or aMap is null");
-        }
-    }
+
 
     private void initView(Bundle savedInstanceState) {
         mDoubleSeekbar = new MyDoubleSeekBar<Integer>(0, 100, this);
