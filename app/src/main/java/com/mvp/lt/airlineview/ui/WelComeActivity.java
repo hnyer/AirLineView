@@ -9,10 +9,14 @@ import android.view.View;
 import android.widget.Button;
 
 import com.mvp.lt.airlineview.R;
+import com.mvp.lt.airlineview.RenderGlActivity;
+import com.mvp.lt.airlineview.playMedia.PlayMediaActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import cn.yznu.gdmapoperate.ui.activity.CustViewActivity;
+import cn.yznu.gdmapoperate.ui.activity.MapMainActivity;
 
 
 /**
@@ -36,15 +40,12 @@ public class WelComeActivity extends AppCompatActivity {
     Button mBtn5;
     @BindView(R.id.custom_knife)
     Button customKnife;
-
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome_);
         ButterKnife.bind(this);
     }
-
     @OnClick({R.id.btn_1, R.id.btn_2, R.id.btn_3,
             R.id.btn_4, R.id.btn_5, R.id.btn_6,
             R.id.btn_7,
@@ -53,29 +54,28 @@ public class WelComeActivity extends AppCompatActivity {
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.btn_1:
-               // startActivity(new Intent(WelComeActivity.this, MainActivity.class));
+                startActivity(new Intent(WelComeActivity.this, MainActivity.class));
                 break;
             case R.id.btn_2:
-               // startActivity(new Intent(WelComeActivity.this, PlayMediaActivity.class));
+                startActivity(new Intent(WelComeActivity.this, PlayMediaActivity.class));
                 break;
             case R.id.btn_3:
-                //startActivity(new Intent(WelComeActivity.this, CCBActivity.class));
+                startActivity(new Intent(WelComeActivity.this, CCBActivity.class));
                 break;
             case R.id.btn_4:
-               // startActivity(new Intent(WelComeActivity.this, CircleActivity.class));
-
+                startActivity(new Intent(WelComeActivity.this, CircleActivity.class));
                 break;
             case R.id.btn_5:
-               // startActivity(new Intent(WelComeActivity.this, MapMainActivity.class));
+                startActivity(new Intent(WelComeActivity.this, MapMainActivity.class));
                 break;
             case R.id.btn_6:
-               // startActivity(new Intent(WelComeActivity.this, CustViewActivity.class));
+                startActivity(new Intent(WelComeActivity.this, CustViewActivity.class));
                 break;
             case R.id.btn_7:
-               // startActivity(new Intent(WelComeActivity.this, RenderGlActivity.class));
+                startActivity(new Intent(WelComeActivity.this, RenderGlActivity.class));
                 break;
             case R.id.custom_knife:
-               // startActivity(new Intent(WelComeActivity.this, TextCustomKnifeActivity.class));
+                startActivity(new Intent(WelComeActivity.this, TextCustomKnifeActivity.class));
                 break;
             case R.id.simulation:
                 startActivity(new Intent(WelComeActivity.this, com.example.clickservice.MainActivity.class));

@@ -15,7 +15,9 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
+import com.mvp.lt.airlineview.opengles.AbstractPRenderer;
 import com.mvp.lt.airlineview.opengles.TestRenderer;
 
 import butterknife.BindView;
@@ -30,7 +32,7 @@ import butterknife.OnClick;
  */
 
 
-public class RenderGlActivity extends AppCompatActivity implements GestureDetector.OnGestureListener {
+public class RenderGlActivity extends AppCompatActivity implements GestureDetector.OnGestureListener, View.OnTouchListener {
     @BindView(R.id.genderView)
     GLSurfaceView mGenderView;
     @BindView(R.id.add)
@@ -39,13 +41,14 @@ public class RenderGlActivity extends AppCompatActivity implements GestureDetect
     Button mReduce;
     private boolean supportsEs2;
     private Handler mHandler;
-
+    private AbstractPRenderer render;
     private TestRenderer mJiasudu;
     private GestureDetector mGestureDetector;
     private float tatio;
     private static final int DISTANCE = 50;
     private static final int VELOCITY = 0;
-    private  double nLenStart = 0;
+    private double nLenStart = 0;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,7 +57,8 @@ public class RenderGlActivity extends AppCompatActivity implements GestureDetect
         ButterKnife.bind(this);
         mGestureDetector = new GestureDetector(this);
 
-        mJiasudu = new TestRenderer(mHandler);
+        render = new TestRenderer(mHandler);
+        mGenderView.setOnTouchListener(this);
         mGenderView.setRenderer(mJiasudu);
         mGenderView.setFocusable(true);
         mGenderView.setClickable(true);
@@ -106,68 +110,76 @@ public class RenderGlActivity extends AppCompatActivity implements GestureDetect
 
     @Override
     public void onShowPress(MotionEvent e) {
-        Log.i("MotionEvent","onShowPress");
+        Log.i("MotionEvent", "onShowPress");
     }
 
     @Override
     public boolean onSingleTapUp(MotionEvent e) {
-        Log.i("MotionEvent","onSingleTapUp");
+        Log.i("MotionEvent", "onSingleTapUp");
         return false;
     }
 
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        Log.i("MotionEvent","onScroll"+(e1.getX()-e2.getX()));
+        Log.i("MotionEvent", "onScroll" + (e1.getX() - e2.getX()));
         return false;
     }
 
     @Override
     public void onLongPress(MotionEvent e) {
-        Log.i("MotionEvent","onLongPress");
+        Log.i("MotionEvent", "onLongPress");
     }
 
     @Override
     public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        float step = 5f;
+        if (e1.getX() - e2.getX() > DISTANCE && Math.abs(velocityX) > VELOCITY) {
+            render.yrotate = render.yrotate + step;
+            Log.i("render", "" + render.yrotate);
+        } else if (e2.getX() - e1.getX() > DISTANCE && Math.abs(velocityX) > VELOCITY) {
+            render.yrotate = render.yrotate - step;
+        } else if (e1.getY() - e2.getY() > DISTANCE && Math.abs(velocityY) > VELOCITY) {
+            render.xrotate = render.xrotate - step;
+        } else if (e2.getY() - e1.getY() > DISTANCE && Math.abs(velocityY) > VELOCITY) {
+            render.xrotate = render.xrotate + step;
+        }
+        Log.i("MotionEvent", "" + (e1.getX() - e2.getX()));
         return false;
     }
 
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        //手势是渲染图变大小
+        float scale = 0.05f;
+        int nCnt = event.getPointerCount();
+        if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_POINTER_DOWN && 2 == nCnt) {
+            int xlen = Math.abs((int) event.getX(0) - (int) event.getX(1));
+            int ylen = Math.abs((int) event.getY(0) - (int) event.getY(1));
 
 
-//    //手指按下的点为(x1, y1)手指离开屏幕的点为(x2, y2)
-//    float x1 = 0;
-//    float x2 = 0;
-//    float y1 = 0;
-//    float y2 = 0;
-//
-//    @Override
-//    public boolean onTouchEvent(MotionEvent event) {
-//        //继承了Activity的onTouchEvent方法，直接监听点击事件
-//        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-//            //当手指按下的时候
-//            x1 = event.getX();
-//            y1 = event.getY();
-//        }
-//        if (event.getAction() == MotionEvent.ACTION_MOVE) {
-//            x2 = event.getX();
-//            y2 = event.getY();
-//            if (x1 - x2 > 50) {
-//                mJiasudu.glRotate((x1 - x2) - 50, -2f);
-////                Toast.makeText(MediaPlayBackActivity.this, "向左滑", Toast.LENGTH_SHORT).show();
-//            } else if (x2 - x1 > 50) {
-////                Toast.makeText(MediaPlayBackActivity.this, "向右滑", Toast.LENGTH_SHORT).show();
-//                mJiasudu.glRotate((x2 - x1) - 50, 2f);
-//            } else if (y1 - y2 > 50) {
-//
-////                Toast.makeText(MediaPlayBackActivity.this, "向上滑", Toast.LENGTH_SHORT).show();
-//            } else if (y2 - y1 > 50) {
-//                // Toast.makeText(MediaPlayBackActivity.this, "向下滑", Toast.LENGTH_SHORT).show();
-//            }
-//        }
-//        if (event.getAction() == MotionEvent.ACTION_UP) {
-//            //当手指离开的时候
-//
-//
-//        }
-//        return super.onTouchEvent(event);
-//    }
+            nLenStart = Math.sqrt((double) xlen * xlen + (double) ylen * ylen);
+        } else if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_POINTER_UP && 2 == nCnt) {
+            int xlen = Math.abs((int) event.getX(0) - (int) event.getX(1));
+            int ylen = Math.abs((int) event.getY(0) - (int) event.getY(1));
+            double nLenEnd = Math.sqrt((double) xlen * xlen + (double) ylen * ylen);
+            //通过两个手指开始距离和结束距离，来判断放大缩小
+            if (nLenEnd > nLenStart) {
+                render.XScalef = render.XScalef + scale;
+                render.YScalef = render.YScalef + scale;
+                render.ZScalef = render.ZScalef + scale;
+                Toast.makeText(getApplicationContext(), "放大", Toast.LENGTH_LONG).show();
+            } else {
+                render.XScalef = render.XScalef - scale;
+                render.YScalef = render.YScalef - scale;
+                render.ZScalef = render.ZScalef - scale;
+                Toast.makeText(getApplicationContext(), "缩小", Toast.LENGTH_LONG).show();
+            }
+        }
+        return mGestureDetector.onTouchEvent(event);
+    }
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
+
+    }
 }
