@@ -10,6 +10,7 @@ import android.widget.Button;
 
 import com.mvp.lt.airlineview.R;
 import com.mvp.lt.airlineview.RenderGlActivity;
+import com.mvp.lt.airlineview.TaskTest.TaskTestActivity;
 import com.mvp.lt.airlineview.playMedia.PlayMediaActivity;
 
 import butterknife.BindView;
@@ -40,15 +41,17 @@ public class WelComeActivity extends AppCompatActivity {
     Button mBtn5;
     @BindView(R.id.custom_knife)
     Button customKnife;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome_);
         ButterKnife.bind(this);
     }
+
     @OnClick({R.id.btn_1, R.id.btn_2, R.id.btn_3,
             R.id.btn_4, R.id.btn_5, R.id.btn_6,
-            R.id.btn_7,
+            R.id.btn_7, R.id.btn_8,
             R.id.custom_knife,
             R.id.simulation, R.id.ce_test})
     public void onViewClicked(View view) {
@@ -73,6 +76,9 @@ public class WelComeActivity extends AppCompatActivity {
                 break;
             case R.id.btn_7:
                 startActivity(new Intent(WelComeActivity.this, RenderGlActivity.class));
+                break;
+            case R.id.btn_8:
+                startActivity(new Intent(WelComeActivity.this, TaskTestActivity.class));
                 break;
             case R.id.custom_knife:
                 startActivity(new Intent(WelComeActivity.this, TextCustomKnifeActivity.class));

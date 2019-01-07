@@ -1,10 +1,10 @@
 package com.mvp.lt.airlineview.opengles;
 
 import android.annotation.SuppressLint;
+import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -23,11 +23,10 @@ import javax.microedition.khronos.opengles.GL10;
  */
 
 
-public class TestRenderer extends AbstractPRenderer {
+public class TestRenderer implements GLSurfaceView.Renderer  {
     //    float x = -0.5f, y = -0.5f, z = -0.5f;
     float x = 1f, y = 1.5f, z = 1f;
-    float xx = 1f, yy = 1f, zz = 1f;
-    private float r = 0;
+//    float xx = 1f, yy = 1f, zz = 1f;
     private float rotateValue = 0;
     Handler handler, handler2;
     private Timer timer = new Timer();
@@ -43,7 +42,17 @@ public class TestRenderer extends AbstractPRenderer {
     ByteBuffer ZFacetsBuffer;
     private float[] mLineVertices;
     private GL10 mGl;
+
+    //负数逆时针 ，正数顺时针
     private float mY = -1f;
+
+
+    public  float ratio;
+    public float xrotate = 0f;//围绕x轴旋转角度
+    public float yrotate = 0f;//围绕y轴旋转角度
+    public float XScalef = 1f;//缩放大小
+    public float YScalef = 1f;//缩放大小
+    public float ZScalef = 1f;//缩放大小
 
     //    // 创建GLSurfaceView的内容绘制器
 //    Jiasudu myRender = new Jiasudu(drawlineHandler);
@@ -267,12 +276,10 @@ public class TestRenderer extends AbstractPRenderer {
     }
 
     //2.3 实现接口里的三个方法
-
-    @Override
+     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         // 关闭抗抖动
         gl.glDisable(GL10.GL_DITHER);
-
         // 设置系统对透视进行修正
         gl.glHint(GL10.GL_PERSPECTIVE_CORRECTION_HINT, GL10.GL_FASTEST);
         gl.glClearColor(0, 0, 0, 0);
@@ -294,8 +301,9 @@ public class TestRenderer extends AbstractPRenderer {
         // 初始化单位矩阵
         gl.glLoadIdentity();
         // 计算透视视窗的宽度、高度比
-        float ratio = (float) width / height;
+         ratio = (float) width / height;
         // 调用此方法设置透视视窗的空间大小。
+        //gl.glFrustumf(-ratio, ratio, -1, 1, 3f, 7f);
         gl.glFrustumf(-ratio, ratio, -1, 1, 1, 10);
     }
 
@@ -319,9 +327,9 @@ public class TestRenderer extends AbstractPRenderer {
         gl.glTranslatef(0.0f, -0.0f, -3.0f);//移动中心
         // 沿着Y轴旋转
 
-        gl.glRotatef(r, 0f, mY, 0.0f);
+        gl.glRotatef(yrotate, 0f, mY, 0.0f);
 
-        gl.glScalef(xx, yy, zz);
+        gl.glScalef(XScalef, YScalef, ZScalef);
         // r++;
         // 沿着X轴旋转
         //gl.glRotatef(0f, 0.1f, 0f, 0f);
@@ -388,16 +396,9 @@ public class TestRenderer extends AbstractPRenderer {
 
     //缩放变换
     public void scale(float x, float y, float z) {
-        xx = xx * x;
-        yy = yy * y;
-        zz = zz * z;
-        // onDrawFrame(mGl);
-        // scaleM(mLineVertices,0,x,y,z);
     }
 
     public void glRotate(float rv, float d) {
-        r = r + 1;
-        Log.e("glRotate", r + "");
         mY = d;
 //        onDrawFrame(mGl);
     }
